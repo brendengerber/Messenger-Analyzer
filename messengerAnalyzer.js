@@ -20,8 +20,9 @@ fileNames.forEach(file => {
 
 
 
-//loops through the filesObject and creates messagesObject which contains only the desired data from all JSON filesObject
-//Removes messages with no text i.e. only media files, reactions, or links
+//loops through filesObject and creates a messagesObject which contains only the desired data from all JSON files in filesObject
+//Removes messages with no text i.e. only media files(undefined), reactions(Reacted), or links(https)
+//Creates an array for all the words seperately while stripping them of characters (except apostrophe), spacing, and newlines
 messagesObject = {};
 for(let file in filesObject){
     for(let message of filesObject[file]['messages']){
@@ -43,9 +44,9 @@ console.dir(messagesObject, { depth: null })
 
 
 // //Use this to add arrays of the words in the messages
-// let test = "this*is " + " a\n" +" test string you're"
+// let test = "this*is " + " a\n" +" test string you're?"
 // test = test.trim().split(/(?!')\W+/g)
-// // test = test.split(/\W/)g.filter(word => word !== '')
+// // // test = test.split(/\W/)g.filter(word => word !== '')
 // console.log(test)
 
 
