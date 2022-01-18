@@ -25,9 +25,9 @@ fileNames.forEach(file => {
 messagesObject = {};
 for(let file in filesObject){
     for(let message of filesObject[file]['messages']){
-        if(messagesObject[message['sender_name']] === undefined){
+        if(messagesObject[message['sender_name']] === undefined && message['content'] !== undefined){
             messagesObject[message['sender_name']] = [{text : message['content'], date_ms : message['timestamp_ms']}]
-        } else {
+        } else if(message['content'] !== undefined){
             messagesObject[message['sender_name']] = messagesObject[message['sender_name']].concat([{text : message['content'], date_ms : message['timestamp_ms']}])
 
         }
@@ -36,7 +36,6 @@ for(let file in filesObject){
 
 
 console.dir(messagesObject, { depth: null })
-
 
 
 
