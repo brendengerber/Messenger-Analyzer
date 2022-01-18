@@ -4,7 +4,7 @@
 //add all below into a function with parameters "dateStart", "dateEnd", "wordsToOmit" (which is an array of common words like the, a, an and will be used when looping the final words array and counting words "if not in wordsToOmit")
 //counts words of both of us individually and together
 //does it work for convos with multiple people?
-
+//words arrays sometimes have an empty string at the end for some reason
 
 //Creates an array of all file names in the messages directory
 const fs = require("fs");
@@ -22,19 +22,19 @@ fileNames.forEach(file => {
 
 //loops through the filesObject and creates messagesObject which contains only the desired data from all JSON filesObject
 //Removes messages with no text i.e. only media files, reactions, or links
-//add logic to add an array of words to the end of the object in the array {text : message['content'], date_ms : message['timestamp_ms', words: xx]}. keep text so that I can calculate things like messages per day?
 messagesObject = {};
 for(let file in filesObject){
     for(let message of filesObject[file]['messages']){
         if(messagesObject[message['sender_name']] === undefined && message['content'] !== undefined && /^(?!Reacted|https)/.test(message['content'])){
-            messagesObject[message['sender_name']] = [{text: message['content'], date_ms: message['timestamp_ms']}]
+            messagesObject[message['sender_name']] = [{text: message['content'], date_ms: message['timestamp_ms'], words: message['content'].trim().split(/(?!')\W+/g)}]
         } else if(message['content'] !== undefined && /^(?!Reacted|https)/.test(message['content'])){
-            messagesObject[message['sender_name']] = messagesObject[message['sender_name']].concat([{text: message['content'], date_ms : message['timestamp_ms']}])
+            messagesObject[message['sender_name']] = messagesObject[message['sender_name']].concat([{text: message['content'], date_ms: message['timestamp_ms'], words: message['content'].trim().split(/(?!')\W+/g)}])
 
         }
     }
 }
 
+//prints out full object if desired for analysis
 console.dir(messagesObject, { depth: null })
 
 
@@ -43,8 +43,8 @@ console.dir(messagesObject, { depth: null })
 
 
 // //Use this to add arrays of the words in the messages
-// let test = "this*is " + " a\n" +" test string "
-// test = test.trim().split(/\W+/g)
+// let test = "this*is " + " a\n" +" test string you're"
+// test = test.trim().split(/(?!')\W+/g)
 // // test = test.split(/\W/)g.filter(word => word !== '')
 // console.log(test)
 
