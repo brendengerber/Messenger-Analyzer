@@ -26,10 +26,9 @@ fileNames.forEach(file => {
 
 
 //loops through filesObject and creates a messagesObject which contains only the desired data from all JSON files in filesObject
-//Removes messages with no text i.e. only media files(undefined), reactions(Reacted), or links(https)
+//Removes messages with no text i.e. only media files(undefined), reactions(Reacted), links(https), or emoticons (both sequential or separated by spaces)
 //Creates an array for all the words seperately while stripping them of special characters (except apostrophe, including weird unicode â\x80\x99 and \u00e2\u0080\u0099 ), spacing, newlines, and emoticons (list of current and retired as of 01/01/2022)
 messagesObject = {};
-
 for(let file in filesObject){
     for(let message of filesObject[file]['messages']){
         if(message['content'] !== undefined && message['content'].replace(emoticons, '').replace(/\s+/,'') === ''){
