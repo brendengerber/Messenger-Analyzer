@@ -32,7 +32,7 @@ messagesObject = {};
 
 for(let file in filesObject){
     for(let message of filesObject[file]['messages']){
-        if(message['content'] !== undefined && message['content'].replace(emoticons, '') === ''){
+        if(message['content'] !== undefined && message['content'].replace(emoticons, '').replace(/\s+/,'') === ''){
             continue
         } else if(messagesObject[message['sender_name']] === undefined && message['content'] !== undefined && /^(?!Reacted|https)/.test(message['content'])){
             messagesObject[message['sender_name']] = [{text: message['content'], date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')}];
@@ -57,12 +57,16 @@ console.dir(messagesObject, { depth: null })
 // // // // test = test.split(/\W/)g.filter(word => word !== '')
 // console.log(test)
 
-// // let test = ':/:)'
-// // // let test = ':) and some more text :)'
+// let test = ':/ :) test'
+// // let test = ':) and some more text :)'
 // // test = test.match(emoticons)
 // // console.log(test)
 
-
+// if(test !== undefined && test.replace(emoticons, '').replace(/\s+/,'') === ''){
+//     console.log('success')
+// }else{
+//     console.log(test)
+// }
 
 
 
