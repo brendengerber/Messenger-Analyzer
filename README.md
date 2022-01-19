@@ -11,7 +11,7 @@ This simple script will allow you to conduct a simple analysis of your messenger
 
 2. You will be sent an email to confirm the request and a second email when your request is ready to download. Remember the file will only be available for a few days before you will have to resubmit the request.
 
-3. In your newly downloaded zipfile, navegate to messages/inbox/ and open the desired conversation.
+3. In your newly downloaded zipfile, navigate to messages/inbox/ and open the desired conversation.
 
 4. Copy the .JSON files and paste them into messengerAnalyzer/messages/.
 
