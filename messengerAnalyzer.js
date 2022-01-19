@@ -1,3 +1,5 @@
+//add messengerAnalyzer.analyze(startDate, endDate, wordsToSkip)(returns the results) messengerAnalyzer.data() (returns the data) and use let data = this.data in .analyze().
+//Use getters and setters, especially for dates since you will need to convert to ms
 //add optional paramaters for words to skip and date ranges
 //add logic to count messages per day average
 //add logic to parse word lists and count the most used words
@@ -9,100 +11,41 @@
 //apostrophe sometimes comes up as \u00e2\u0080\u0099 in JSON file and â\x80\x99 in terminal log, how can we fix this? This is from vietnam keyboard. .replace(/\\u00e2\\u0080\\u0099/g, "'").replace(/â\\x80\\x99/g, "'") does not work because it cant replace the several undefined messages
 //add i flag to emoticon to ignore case sensitivity?
 //when deciding to include or not if message['content'] !== undefined, include a regex to change emoticons to undefined first
+//What if there is a message after http?
+
+//Regex to match current and retired Facebook emoticons as of 01/01/2022
 const emoticons = /O:-\)|O:\)|>:-\(|:42:|:-D|:D|:putnam:|O.o|:'\(|3:-\)|3:\)|=P|B\)|B-\)|8\)|8-\)|>:\(|=\)|<3|:-\/|:-\*|:\*|:3|(Y)|\^_\^|:v|<\("\)|:\|\]|=\(|:\[|:\(|:-\(|\(\^\^\^\)|:-o|:-O|:\]|:-\)|:\)|-_-|:-p|:-P|:p|:P|B\||B-\||8\||8-\||:-o|:-O|:o|:O|:\\|:-\\|:\/|>-:o|>:-O|=D|;-\)|:\)|>:o|>:O/g
 
-
-//Creates an array of all file names in the messages directory
+//Create an array of all file names in the messages directory
 const fs = require("fs");
 let messageDirectory = "./messages";
 let fileNames = fs.readdirSync(messageDirectory);
 
-//Creates object containing all the JSON objects
+//Create an object containing all objects from the JSON files
 let filesObject = {}
 fileNames.forEach(file => {
     filesObject[file] = require("./messages/"+file);
 })
 
-
-
-//loops through filesObject and creates a messagesObject which contains only the desired data from all JSON files in filesObject
-//Removes messages with no text i.e. only media files(undefined), reactions(Reacted), links(https), or emoticons (both sequential or separated by spaces)
-//Creates an array for all the words seperately while stripping them of special characters (except apostrophe, including weird unicode â\x80\x99 and \u00e2\u0080\u0099 ), spacing, newlines, and emoticons (list of current and retired as of 01/01/2022)
+//Loop through filesObject and creates a messagesObject which contains only the desired data from all JSON files in filesObject
+//Remove messages with no text i.e. only media files(undefined), reactions(Reacted), links(https), or emoticons (both sequential or separated by spaces)
+//Create an array for all the words seperately, while stripping them of special characters (except apostrophe), whitespace, newlines, and emoticons
 messagesObject = {};
 for(let file in filesObject){
     for(let message of filesObject[file]['messages']){
-        if(message['content'] !== undefined && message['content'].replace(emoticons, '').replace(/\s+/,'') === ''){
+        //Check if message is undefined, media, reaction, or contains only emoticons and continues if so
+        if((message['content'] !== undefined && message['content'].replace(emoticons, '').replace(/\s+/,'') === '') || /^Reacted|https/.test(message['content']) || message['content'] === undefined){
             continue
-        } else if(messagesObject[message['sender_name']] === undefined && message['content'] !== undefined && /^(?!Reacted|https)/.test(message['content'])){
+        //Add sender and message to messagesObject if sender has not been added
+        }else if(messagesObject[message['sender_name']] === undefined){
             messagesObject[message['sender_name']] = [{text: message['content'], date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')}];
-        } else if(message['content'] !== undefined && /^(?!Reacted|https)/.test(message['content'])){
+        //Add message to messagesObject
+        }else{
             messagesObject[message['sender_name']] = messagesObject[message['sender_name']].concat([{text: message['content'], date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')}])
         }
     }
 }
 
-//prints out full object if desired for analysis
+//Print out full object if desired for analysis
 console.dir(messagesObject, { depth: null })
-
-
-
-// // // //Use this to add arrays of the words in the messages
-// let emoticons = /O:-\)|O:\)|>:-\(|:42:|:-D|:D|:putnam:|O.o|:'\(|3:-\)|3:\)|=P|B\)|B-\)|8\)|8-\)|>:\(|=\)|<3|:-\/|:-\*|:\*|:3|(Y)|\^_\^|:v|<\("\)|:\|\]|=\(|:\[|:\(|:-\(|\(\^\^\^\)|:-o|:-O|:\]|:-\)|:\)|-_-|:-p|:-P|:p|:P|B\||B-\||8\||8-\||:-o|:-O|:o|:O|:\\|:-\\|:\/|>-:o|>:-O|=D|;-\)|:\)|>:o|>:O/g
-
-// let test = " this*is " + " a\n" +" :D:D test? :P:) string you're D :D :* :/"
-// test = test.replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')
-// // console.log(test)
-// // test = test.trim().split(/(?!')\W+/g)
-// // // // test = test.split(/\W/)g.filter(word => word !== '')
-// console.log(test)
-
-// let test = ':/ :) test'
-// // let test = ':) and some more text :)'
-// // test = test.match(emoticons)
-// // console.log(test)
-
-// if(test !== undefined && test.replace(emoticons, '').replace(/\s+/,'') === ''){
-//     console.log('success')
-// }else{
-//     console.log(test)
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// //foreach method, but not working due to formatting?
-// // filesObject.forEach(file => {
-// //     filesObject[file]['messages'].forEach(message => {
-// //         messagesArray.push(message['content'])
-// //     })
-// // })
-// console.log(messagesArray)
-// //breaks messagesArray into an array containing only one word per index, not working
-// let wordsArray = []
-// for(let messages in messagesArray){
-//     for(let words in messages){
-//         wordsArray.push(words)
-//     }
-// }
-
-// // console.log (wordsArray)
-// // console.log(messagesArray)
-
-
-
-
 
