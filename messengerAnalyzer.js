@@ -12,6 +12,8 @@
 //add i flag to emoticon to ignore case sensitivity?
 //when deciding to include or not if message['content'] !== undefined, include a regex to change emoticons to undefined first
 //What if there is a message after http?
+//CSV for excel?
+//check how emoji are represented, could be an issue slipping in
 
 //Regex to match current and retired Facebook emoticons as of 01/01/2022
 const emoticons = /O:-\)|O:\)|>:-\(|:42:|:-D|:D|:putnam:|O.o|:'\(|3:-\)|3:\)|=P|B\)|B-\)|8\)|8-\)|>:\(|=\)|<3|:-\/|:-\*|:\*|:3|(Y)|\^_\^|:v|<\("\)|:\|\]|=\(|:\[|:\(|:-\(|\(\^\^\^\)|:-o|:-O|:\]|:-\)|:\)|-_-|:-p|:-P|:p|:P|B\||B-\||8\||8-\||:-o|:-O|:o|:O|:\\|:-\\|:\/|>-:o|>:-O|=D|;-\)|:\)|>:o|>:O/g
@@ -38,10 +40,10 @@ for(let file in filesObject){
             continue
         //Add sender and message to messagesObject if sender has not been added
         }else if(messagesObject[message['sender_name']] === undefined){
-            messagesObject[message['sender_name']] = [{text: message['content'], date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')}];
+            messagesObject[message['sender_name']] = [{date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')}];
         //Add message to messagesObject
         }else{
-            messagesObject[message['sender_name']] = messagesObject[message['sender_name']].concat([{text: message['content'], date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')}])
+            messagesObject[message['sender_name']] = messagesObject[message['sender_name']].concat([{date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')}])
         }
     }
 }
