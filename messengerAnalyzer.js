@@ -9,13 +9,13 @@
 
 
 let messageAnalyzer = {
-    messageData: {},
     parseFiles: function(){
+        const fs  = require('fs');
+        let messagesData = {};
         //Regex to match current and retired Facebook emoticons as of 01/01/2022
         const emoticons = /O:-\)|O:\)|>:-\(|:42:|:-D|:D|:putnam:|O.o|:'\(|3:-\)|3:\)|=P|B\)|B-\)|8\)|8-\)|>:\(|=\)|<3|:-\/|:-\*|:\*|:3|(Y)|\^_\^|:v|<\("\)|:\|\]|=\(|:\[|:\(|:-\(|\(\^\^\^\)|:-o|:-O|:\]|:-\)|:\)|-_-|:-p|:-P|:p|:P|B\||B-\||8\||8-\||:-o|:-O|:o|:O|:\\|:-\\|:\/|>-:o|>:-O|=D|;-\)|:\)|>:o|>:O/g;
 
         //Create an array of all file names in the messages directory
-        const fs = require("fs");
         let messageDirectory = "./messages";
         let fileNames = fs.readdirSync(messageDirectory);
 
@@ -25,7 +25,7 @@ let messageAnalyzer = {
             filesObject[file] = require("./messages/"+file);
         });
 
-        //Loop through filesObject and create a messageData object which contains the desired and formatted data from all JSON files in filesObject 
+        //Loop through filesObject and creates messagesData which contains only the desired data from all JSON files in filesObject
         //Remove messages with no text i.e. only media files(undefined), reactions(Reacted), links(https), or emoticons (both sequential or separated by spaces)
         //Create an array for all the words seperately, while stripping them of special characters (except apostrophe), whitespace, newlines, and emoticons
         for(let file in filesObject){
@@ -33,16 +33,18 @@ let messageAnalyzer = {
                 //Check if message is undefined, media, reaction, or contains only emoticons and continues if so
                 if((message['content'] !== undefined && message['content'].replace(emoticons, '').replace(/\s+/,'') === '') || /^Reacted|https/.test(message['content']) || message['content'] === undefined){
                     continue
-                //Add sender and message to messageData if sender has not been added
-                }else if(this.messageData[message['sender_name']] === undefined){
-                    this.messageData[message['sender_name']] = [{date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')}];
-                //Add message to messageData
+                //Add sender and message to messagesData if sender has not been added
+                }else if(messagesData[message['sender_name']] === undefined){
+                    messagesData[message['sender_name']] = [{date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')}];
+                //Add message to messagesData
                 }else{
-                    this.messageData[message['sender_name']] = this.messageData[message['sender_name']].concat([{date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')}]);
+                    messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().split(' ')}]);
                 }
             }
         }
+        fs.writeFileSync("./messages/data.JSON", JSON.stringify(messagesData))
     },
+    //change to access file not object
     logData: function(){
         if(Object.keys(this.messageData).length === 0){
             console.log('Data has not yet been parsed. Run "messengerAnalyzer.parseFiles()" and try again.');
@@ -67,17 +69,17 @@ let messageAnalyzer = {
     }
 }
 
+messageAnalyzer.parseFiles()
 
 
-
-rankWords: function(data_file){
-    if(dataJSON does not exist){
-        create JSON using .parsefiles
-    } else {
-        let wordInstances = [{word: 'word1', totalNumber: 4}, {word: 'word2', totalNumber: 5}];
-    //add function here to create the wordInstances and then organize it
-    }
-}
+// rankWords: function(data_file){
+//     if(dataJSON does not exist){
+//         create JSON using .parsefiles
+//     } else {
+//         let wordInstances = [{word: 'word1', totalNumber: 4}, {word: 'word2', totalNumber: 5}];
+//     //add function here to create the wordInstances and then organize it
+//     }
+// }
 
 //before all else have parse files create the JSON file, and put messenger data object inside that function
 //then change logData to check if the JSON data file exists rather than if the messenger data object has a length, maybe instead of an error just have it run it.
