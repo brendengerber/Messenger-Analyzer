@@ -15,7 +15,7 @@
 let messageAnalyzer = {
     //* this works almost, but check out the weird numbers when consol logging wordInstances in the rankWords method, why are they getting in there during parseFiles()?  some are coming as part of unicode? some are coming from links after text (such as 14791675), how can I remove those links when regex http trigers? It's important to remove them as they will influence daily and yearly message averages etc.
     //* perhaps remove everything unwanted in the line inside the for loop but before the if statements. For example remove emoji, and urls (from everywhere not just beginning), and then the first if statement can be to continue if it's empty, undefined, or only reacted. Just have to make sure spaces don't slip in somehow. or maybe it can just go into each elseif since emoticons are already there etc.
-    //* for example replace all with a space and then trim. if they had only emoticons and links, then they will only be spaces and will trim to nothing and be skipped.
+    //* for example replace all with a space and then trim. if they had only emoticons and links, then they will only be spaces and will trim to nothing and be skipped. Oh the problem is when you try to replace undefined
     parseFiles: function(){
         let messagesData = {};
         //Regex to match current and retired Facebook emoticons as of 01/01/2022
@@ -31,21 +31,20 @@ let messageAnalyzer = {
         //Loop through filesObject and creates messagesData which contains only the desired data from all JSON files in filesObject
         //Remove messages with no text i.e. only media files(undefined), reactions(Reacted), links(https), or emoticons (both sequential or separated by spaces)
         //Create an array for all the words seperately, while stripping them of special characters (except apostrophe), whitespace, newlines, emoticons, and capital letters
-        //*Should I loop through and add senders as empty objects first like i do in rankWords?
         for(let file in filesObject){
             for(let message of filesObject[file]['messages']){
                 if(message['content'] !== undefined){
                     message['content'] = message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').replace(/LOGIC TO REPLACE HTTP HERE/).toLowerCase().trim()
                 }
                 //Check if message is undefined, media, reaction, or contains only emoticons and continues if so
-                if( message['content'] === '' || /^Reacted/.test(message['content']) || message['content'] === undefined){
+                if((message['content'] !== undefined && message['content'].replace(emoticons, '').replace(/\s+/,'') === '') || /^Reacted|https/.test(message['content']) || message['content'] === undefined){
                     continue
                 //Add sender and message to messagesData if sender has not been added
                 }else if(messagesData[message['sender_name']] === undefined){
-                    messagesData[message['sender_name']] = [{dateMs: message['timestamp_ms'], words: message['content'].split(' ')}];
+                    messagesData[message['sender_name']] = [{date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}];
                 //Add message to messagesData
                 }else{
-                    messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{dateMs: message['timestamp_ms'], words: message['content'].split(' ')}]);
+                    messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}]);
                 }
             }
         }
@@ -116,7 +115,9 @@ let messageAnalyzer = {
 // *Add all analysis functions here
     }
 }
-messageAnalyzer.rankWords(0,100000000000000000000000)
+// messageAnalyzer.rankWords(0,100000000000000000000000)
+messageAnalyzer.parseFiles()
+messageAnalyzer.logData()
 
 
 // //create a different method for each analysis and have analysis method call each one. Each method should return the data and to view it log the analysis method
