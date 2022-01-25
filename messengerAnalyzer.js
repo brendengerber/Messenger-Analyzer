@@ -33,15 +33,18 @@ let messageAnalyzer = {
         //*Should I loop through and add senders as empty objects first like i do in rankWords?
         for(let file in filesObject){
             for(let message of filesObject[file]['messages']){
+                if(message['content'] !== undefined){
+                    message['content'] = message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').replace(/LOGIC TO REPLACE HTTP HERE/).toLowerCase().trim()
+                }
                 //Check if message is undefined, media, reaction, or contains only emoticons and continues if so
-                if((message['content'] !== undefined && message['content'].replace(emoticons, '').replace(/\s+/,'') === '') || /^http|Reacted/.test(message['content']) || message['content'] === undefined){
+                if( message['content'] === '' || /^Reacted/.test(message['content']) || message['content'] === undefined){
                     continue
                 //Add sender and message to messagesData if sender has not been added
                 }else if(messagesData[message['sender_name']] === undefined){
-                    messagesData[message['sender_name']] = [{dateMs: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}];
+                    messagesData[message['sender_name']] = [{dateMs: message['timestamp_ms'], words: message['content'].split(' ')}];
                 //Add message to messagesData
                 }else{
-                    messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{dateMs: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}]);
+                    messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{dateMs: message['timestamp_ms'], words: message['content'].split(' ')}]);
                 }
             }
         }
