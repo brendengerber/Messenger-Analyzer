@@ -8,7 +8,7 @@
 //writeFile vs writeFileSync
 //change double quotes to singles for consistency 
 
-
+// **************Need to remove the http replace method and add http back to skipping if at the beginning and then run and compare results to the main branch. If they are the same, remove the http at the beginning and add it where indicated.
 
 
 let messageAnalyzer = {
