@@ -44,7 +44,7 @@ let messageAnalyzer = {
                     message['content'] = message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').replace(/LOGIC TO REPLACE HTTP HERE/).toLowerCase().trim()
                 }
                 //Check if message is undefined, media, reaction, or contains only emoticons and continues if so
-                if( message['content'] === '' || /^(?=.*reacted)(?=.*to your message).*$/.test(message['content']) || message['content'] === undefined){
+                if( message['content'] === '' || /(?=.*^reacted)(?=.*to your message$)/.test(message['content']) || message['content'] === undefined){
                     continue
                 //Add sender and message to messagesData if sender has not been added
                 }else if(messagesData[message['sender_name']] === undefined){
