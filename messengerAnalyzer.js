@@ -7,8 +7,9 @@
 //determine dataset date range and display a message if the range input is outside that range?
 //writeFile vs writeFileSync
 //change double quotes to singles for consistency 
+//This function can save those objects to variables maybe. It would also be nice to create later a csv function that would write the data objects returned by each function.
 
-// **************Need to remove the http replace method and add http back to skipping if at the beginning and then run and compare results to the main branch. If they are the same, remove the http at the beginning and add it where indicated.
+// **************Need to remove the http replace method and add http back to skipping if at the beginning and then run and compare results to the main branch. If they are the same, remove the http at the beginning and add it where indicated. As of now they do not quite match.  Add back in the original text before parsiing for comparison. Also check for "stickers"
 
 
 let messageAnalyzer = {
@@ -108,6 +109,7 @@ let messageAnalyzer = {
     rankDays: function(){
 //*add rankDays function here and return the result
     },
+//*This should run all the functions and then display them in a really nice and easy to read multi line string. The functions themselves should return the data objects. 
     analyzeData: function(startDate, endDate, wordsToSkip){
         this.rankWords();
         this.rankDays();
