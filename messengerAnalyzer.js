@@ -18,7 +18,7 @@ let messageAnalyzer = {
     //* for example replace all with a space and then trim. if they had only emoticons and links, then they will only be spaces and will trim to nothing and be skipped. Oh the problem is when you try to replace undefined
     parseFiles: function(){
         let messagesData = {};
-        //Regex to match current and retired Facebook emoticons as of 01/01/2022
+        //Regex to match current and retired Facebook emoticons (not emoji) as of 01/01/2022
         const emoticons = /O:-\)|O:\)|>:-\(|:42:|:-D|:D|:putnam:|O.o|:'\(|3:-\)|3:\)|=P|B\)|B-\)|8\)|8-\)|>:\(|=\)|<3|:-\/|:-\*|:\*|:3|(Y)|\^_\^|:v|<\("\)|:\|\]|=\(|:\[|:\(|:-\(|\(\^\^\^\)|:-o|:-O|:\]|:-\)|:\)|-_-|:-p|:-P|:p|:P|B\||B-\||8\||8-\||:-o|:-O|:o|:O|:\\|:-\\|:\/|>-:o|>:-O|=D|;-\)|:\)|>:o|>:O/g;
         //Create an array of all file names in the messages directory
         let messageDirectory = "./messages";
@@ -33,13 +33,18 @@ let messageAnalyzer = {
         //Create an array for all the words seperately, while stripping them of special characters (except apostrophe), whitespace, newlines, emoticons, and capital letters
         //*Should I loop through and add senders as empty objects first like i do in rankWords?
         //*remove 2 instances of message: message['content'] for final
+        //* 1639133599672 why is this being recoreded as "es" instead of "yes"? in both new and original
+        //*Add reacted && to your message to be more specific
+        //*Add only if type generic, then can remove http, and just change the regex removing symbols to skip it if it is a http
+        //* luckily this does catch her =.= but only because it's symbols, not because it's emoji, any way to catch everything that even might include letters like o.o
+        //*Add logic to remove http until a space or end of string (removes links sent as text not share)
         for(let file in filesObject){
             for(let message of filesObject[file]['messages']){
                 if(message['content'] !== undefined){
                     message['content'] = message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').replace(/LOGIC TO REPLACE HTTP HERE/).toLowerCase().trim()
                 }
                 //Check if message is undefined, media, reaction, or contains only emoticons and continues if so
-                if( message['content'] === '' || /^reacted/.test(message['content']) || message['content'] === undefined){
+                if( message['content'] === '' || /^(?=.*reacted)(?=.*to your message).*$/.test(message['content']) || message['content'] === undefined){
                     continue
                 //Add sender and message to messagesData if sender has not been added
                 }else if(messagesData[message['sender_name']] === undefined){
