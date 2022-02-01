@@ -42,10 +42,10 @@ let messageAnalyzer = {
                     continue
                 //Add sender and message to messagesData if sender has not been added
                 }else if(messagesData[message['sender_name']] === undefined){
-                    messagesData[message['sender_name']] = [{message: message['content'], date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}];
+                    messagesData[message['sender_name']] = [{message: message['content'], dateMs: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}];
                 //Add message to messagesData
                 }else{
-                    messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{message: message['content'], date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}]);
+                    messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{message: message['content'], dateMs: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}]);
                 }
             }
         }
