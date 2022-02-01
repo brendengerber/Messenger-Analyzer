@@ -19,7 +19,7 @@ let messageAnalyzer = {
     parseFiles: function(){
         let messagesData = {};
         //Regex to match current and retired Facebook emoticons (not emoji) as of 01/01/2022
-        const emoticons = /O:-\)|O:\)|>:-\(|:42:|:-D|:D|:putnam:|O.o|:'\(|3:-\)|3:\)|=P|B\)|B-\)|8\)|8-\)|>:\(|=\)|<3|:-\/|:-\*|:\*|:3|(Y)|\^_\^|:v|<\("\)|:\|\]|=\(|:\[|:\(|:-\(|\(\^\^\^\)|:-o|:-O|:\]|:-\)|:\)|-_-|:-p|:-P|:p|:P|B\||B-\||8\||8-\||:-o|:-O|:o|:O|:\\|:-\\|:\/|>-:o|>:-O|=D|;-\)|:\)|>:o|>:O/g;
+        const emoticons = /O:-\)|O:\)|>:-\(|:42:|:-D|:D|:putnam:|O.o|:'\(|3:-\)|3:\)|=P|B\)|B-\)|8\)|8-\)|>:\(|=\)|<3|:-\/|:-\*|:\*|:3|\(Y\)|\(y\)|\^_\^|:v|<\("\)|:\|\]|=\(|:\[|:\(|:-\(|\(\^\^\^\)|:-o|:-O|:\]|:-\)|:\)|-_-|:-p|:-P|:p|:P|B\||B-\||8\||8-\||:-o|:-O|:o|:O|:\\|:-\\|:\/|>-:o|>:-O|=D|;-\)|:\)|>:o|>:O/g;
         //Create an array of all file names in the messages directory
         let messageDirectory = "./messages";
         let fileNames = require('fs').readdirSync(messageDirectory);
@@ -30,28 +30,25 @@ let messageAnalyzer = {
         });
         //Loop through filesObject and creates messagesData which contains only the desired data from all JSON files in filesObject
         //Remove messages with no text i.e. only media files(undefined), reactions(Reacted), links(https), or emoticons (both sequential or separated by spaces)
-        //Create an array for all the words seperately, while stripping them of special characters (except apostrophe), whitespace, newlines, emoticons, and capital letters
+        //Create an array of all individual words for each message, while stripping them of special characters (except apostrophe), whitespace, newlines, emoticons, and capital letters
         //*Should I loop through and add senders as empty objects first like i do in rankWords?
         //*remove 2 instances of message: message['content'] for final
-        //* 1639133599672 why is this being recoreded as "es" instead of "yes"? in both new and original
-        //*Add reacted && to your message to be more specific
-        //*Add only if type generic, then can remove http, and just change the regex removing symbols to skip it if it is a http
         //* luckily this does catch her =.= but only because it's symbols, not because it's emoji, any way to catch everything that even might include letters like o.o
-        //*Add logic to remove http until a space or end of string (removes links sent as text not share)
         for(let file in filesObject){
             for(let message of filesObject[file]['messages']){
+                //Format message content by removing "Reacted" dialog, emoticons, special characters (excluding apostrophes), and URLs as well as trimming whitespace and setting to lower case letters (replaces with spaces rather than empty string as it does not remove other content which will be parsed in the next if...else statement and this prevents content from running together)
                 if(message['content'] !== undefined){
-                    message['content'] = message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').replace(/LOGIC TO REPLACE HTTP HERE/).toLowerCase().trim()
+                    message['content'] = message['content'].replace(/(?:https?|ftp):\/\/[\S]+/g, ' ').replace(/^Reacted.*to your message $/, ' ').replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').toLowerCase().trim()
                 }
-                //Check if message is undefined, media, reaction, or contains only emoticons and continues if so
-                if( message['content'] === '' || /(?=.*^reacted)(?=.*to your message$)/.test(message['content']) || message['content'] === undefined){
+                //Check if message is undefined, empty, or of the wrong type (i.e. share) and continues if so  
+                if( message['content'] === '' || message['content'] === undefined || message['type'] !== 'Generic') {
                     continue
                 //Add sender and message to messagesData if sender has not been added
                 }else if(messagesData[message['sender_name']] === undefined){
-                    messagesData[message['sender_name']] = [{message: message['content'], dateMs: message['timestamp_ms'], words: message['content'].split(' ')}];
+                    messagesData[message['sender_name']] = [{dateMs: message['timestamp_ms'], words: message['content'].split(' ')}];
                 //Add message to messagesData
                 }else{
-                    messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{message: message['content'], dateMs: message['timestamp_ms'], words: message['content'].split(' ')}]);
+                    messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{dateMs: message['timestamp_ms'], words: message['content'].split(' ')}]);
                 }
             }
         }
