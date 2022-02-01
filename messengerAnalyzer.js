@@ -39,7 +39,7 @@ let messageAnalyzer = {
                     message['content'] = message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').replace(/LOGIC TO REPLACE HTTP HERE/).toLowerCase().trim()
                 }
                 //Check if message is undefined, media, reaction, or contains only emoticons and continues if so
-                if((message['content'] !== undefined && message['content'].replace(emoticons, '').replace(/\s+/,'') === '') || /^Reacted|http/.test(message['content']) || message['content'] === undefined){
+                if( message['content'] === '' || /^reacted/.test(message['content']) || message['content'] === undefined){
                     continue
                 //Add sender and message to messagesData if sender has not been added
                 }else if(messagesData[message['sender_name']] === undefined){
@@ -117,8 +117,7 @@ let messageAnalyzer = {
 // *Add all analysis functions here
     }
 }
-// messageAnalyzer.rankWords(0,100000000000000000000000)
-messageAnalyzer.parseFiles()
+messageAnalyzer.logData(0,100000000000000000000000)
 
 
 // //create a different method for each analysis and have analysis method call each one. Each method should return the data and to view it log the analysis method
