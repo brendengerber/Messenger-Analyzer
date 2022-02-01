@@ -31,6 +31,7 @@ let messageAnalyzer = {
         //Loop through filesObject and creates messagesData which contains only the desired data from all JSON files in filesObject
         //Remove messages with no text i.e. only media files(undefined), reactions(Reacted), links(https), or emoticons (both sequential or separated by spaces)
         //Create an array for all the words seperately, while stripping them of special characters (except apostrophe), whitespace, newlines, emoticons, and capital letters
+        //*Remember to remove message: message[content] for final
         for(let file in filesObject){
             for(let message of filesObject[file]['messages']){
                 if(message['content'] !== undefined){
@@ -41,10 +42,10 @@ let messageAnalyzer = {
                     continue
                 //Add sender and message to messagesData if sender has not been added
                 }else if(messagesData[message['sender_name']] === undefined){
-                    messagesData[message['sender_name']] = [{date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}];
+                    messagesData[message['sender_name']] = [{message: message[content], date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}];
                 //Add message to messagesData
                 }else{
-                    messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}]);
+                    messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{message: message[content], date_ms: message['timestamp_ms'], words: message['content'].replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').trim().toLowerCase().split(' ')}]);
                 }
             }
         }
