@@ -25,13 +25,13 @@ let messageAnalyzer = {
         fileNames.forEach(file => {
             filesObject[file] = require('./messages/'+ file);
         });
-        //Loop through filesObject and add only the desired data from all JSON files in filesObject to messagesData
         //Add 'participants' from each file to messagesData as 'sender'
         for(let file in filesObject){
             for(let participant of filesObject[file]['participants']){
                 messagesData[participant['name']] = []
             }
         }
+        //Loop through filesObject and add only the desired data from all JSON files in filesObject to messagesData
         for(let file in filesObject){
             for(let message of filesObject[file]['messages']){
                 //Format message content by removing 'Reacted' dialog, emoticons, special characters (excluding apostrophes), and URLs as well as trimming whitespace and setting to lower case letters (replaces with spaces rather than empty string as it does not remove other content which will be parsed in the next if...else statement and this prevents content from running together)
@@ -62,7 +62,7 @@ let messageAnalyzer = {
         console.dir(require('./data/data.json'),{ depth: null });
     },
     //Count the messages sent by each sender as well as the total
-    countWords: function(startDate, endDate){
+    countWords: function(startDate = 0 - Infinity, endDate = Infinity){
         this.checkForDataFile();
         let messageData = require('./data/data.json');
         let wordCounts = {};
@@ -99,7 +99,7 @@ let messageAnalyzer = {
 //* https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
 //* set defaults for dates?
 //* Times in messenger are already converted to UTC, dates parsed without timezone are assumed to be UTC as well?
-    rankWords: function(startDate, endDate, wordsToSkip){
+    rankWords: function(startDate = 0 - Infinity, endDate = Infinity, wordsToSkip = []){
         this.checkForDataFile();
         let messageData = require('./data/data.json');
         let wordInstances = {};
@@ -111,7 +111,7 @@ let messageAnalyzer = {
             for(let message of messageData[sender]){
                 if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
                     for(let word of message['words']){
-                       if(word in wordInstances[sender]){
+                       if(word in wordInstances[sender] && !(word in wordsToSkip)){
                            wordInstances[sender][word] = wordInstances[sender][word] + 1;
                        }else{
                            wordInstances[sender][word] = 1
@@ -137,14 +137,14 @@ let messageAnalyzer = {
     },
 //*This should run all the functions and then display them in a really nice and easy to read multi line string. The functions themselves should return the data objects. This might show less than the data objects, for example only the top 10 most used words. 
 //*set defaults for variables?
-    analyzeData: function(startDate, endDate, wordsToSkip){
+    analyzeData: function(startDate = 0 - Infinity, endDate = Infinity, wordsToSkip = []){
         this.rankWords();
         this.rankDays();
 // *Add all analysis functions here
     }
 }
-messageAnalyzer.logData()
-console.log(messageAnalyzer.countWords(1642375751538, 1642375757314))
+messageAnalyzer.rankWords(1642375751538, 1642375757314)
+// console.log(messageAnalyzer.countWords(1642375751538, 1642375757314))
 
 
 
