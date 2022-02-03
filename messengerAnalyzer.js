@@ -22,13 +22,18 @@ let messageAnalyzer = {
         //Create an object containing all objects from the JSON files
         let filesObject = {};
         fileNames.forEach(file => {
-            filesObject[file] = require('./messages/'+file);
+            filesObject[file] = require('./messages/'+ file);
         });
         //Loop through filesObject and creates messagesData which contains only the desired data from all JSON files in filesObject
         //Remove messages with no text i.e. only media files(undefined), reactions(Reacted), links(https), or emoticons (both sequential or separated by spaces)
         //Create an array of all individual words for each message, while stripping them of special characters (except apostrophe), whitespace, newlines, emoticons, and capital letters
-        //*Should I loop through and add senders as empty objects first like i do in rankWords?
         //* luckily this does catch her =.= but only because it's symbols, not because it's emoji, any way to catch everything that even might include letters like o.o
+        //Add 'participants' from each file to messagesData as 'sender'
+        for(let file in filesObject){
+            for(let participant of filesObject[file]['participants']){
+                messagesData[participant['name']] = []
+            }
+        }
         for(let file in filesObject){
             for(let message of filesObject[file]['messages']){
                 //Format message content by removing 'Reacted' dialog, emoticons, special characters (excluding apostrophes), and URLs as well as trimming whitespace and setting to lower case letters (replaces with spaces rather than empty string as it does not remove other content which will be parsed in the next if...else statement and this prevents content from running together)
@@ -38,9 +43,6 @@ let messageAnalyzer = {
                 //Check if message is undefined, empty, or of the wrong type (i.e. share) and continues if so  
                 if( message['content'] === '' || message['content'] === undefined || message['type'] !== 'Generic') {
                     continue
-                //Add sender and message to messagesData if sender has not been added
-                }else if(messagesData[message['sender_name']] === undefined){
-                    messagesData[message['sender_name']] = [{dateMs: message['timestamp_ms'], words: message['content'].split(' ')}];
                 //Add message to messagesData
                 }else{
                     messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{dateMs: message['timestamp_ms'], words: message['content'].split(' ')}]);
@@ -61,16 +63,7 @@ let messageAnalyzer = {
         this.checkForDataFile();
         console.dir(require('./data/data.json'),{ depth: null });
     },
-
-
-
-
-
-
-
-
-
-
+    //Count the messages sent by each sender as well as the total
     countWords: function(startDate, endDate){
         this.checkForDataFile();
         let messageData = require('./data/data.json');
@@ -152,8 +145,9 @@ let messageAnalyzer = {
 // *Add all analysis functions here
     }
 }
+messageAnalyzer.logData()
 console.log(messageAnalyzer.countWords(1642375751538, 1642375757314))
-// messageAnalyzer.logData()
+
 
 
 
