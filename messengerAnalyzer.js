@@ -7,11 +7,11 @@
 //determine dataset date range and display a message if the range input is outside that range?
 //writeFile vs writeFileSync
 //This function can save those objects to variables maybe. It would also be nice to create later a csv function that would write the data objects returned by each function.
+//is there a way to create a new data file if things have changed?
 
 
 
 let messageAnalyzer = {
-    //* this works almost, but check out the weird numbers when consol logging wordInstances in the rankWords method, why are they getting in there during parseFiles()?  some are coming as part of unicode? some are coming from links after text (such as 14791675), how can I remove those links when regex http trigers? It's important to remove them as they will influence daily and yearly message averages etc.
     parseFiles: function(){
         let messagesData = {};
         //Regex to match current and retired Facebook emoticons (not emoji) as of 01/01/2022
@@ -47,15 +47,52 @@ let messageAnalyzer = {
                 }
             }
         }
+        //Create a JSON file to avoid the lengthy parsing process if doing multiple analytics
         require('fs').writeFileSync('./data/data.json', JSON.stringify(messagesData));
     },
-    logData: function(){
+    //Check if data file exists and creates it if not
+    checkForDataFile: function(){
         if(!require('fs').existsSync('./data/data.json')){
             this.parseFiles();
         }
+    },
+    //Log data file, useful for examining raw data
+    logData: function(){
+        this.checkForDataFile();
         console.dir(require('./data/data.json'),{ depth: null });
     },
 
+
+
+
+
+
+
+
+
+
+    countWords: function(startDate, endDate){
+        this.checkForDataFile();
+        let messageData = require('./data/data.json');
+        let wordCounts = {};
+        for(let sender in messageData){
+            wordCounts[sender] = 0;
+        }
+        for(let sender in messageData){
+            for(let message of messageData[sender]){
+                if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
+                    wordCounts[sender] += 1
+                }
+            }
+        }
+        let total = 0;
+        for(let sender in wordCounts){
+            total += wordCounts[sender];
+        }
+        wordCounts['total'] = total
+        return wordCounts
+    },
+    
 
 
 
@@ -69,19 +106,19 @@ let messageAnalyzer = {
 //* user input needs to be converted to ms and it will work flawlessly
 //* need to add words to skip
 //* https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
-    rankWords: function(startDate, endDate){
-        if(!require('fs').existsSync('./data/data.json')){
-            this.parseFiles();
-        }
+//* set defaults for dates?
+//* Times in messenger are already converted to UTC, dates parsed without timezone are assumed to be UTC as well?
+    rankWords: function(startDate, endDate, wordsToSkip){
+        this.checkForDataFile();
         let messageData = require('./data/data.json');
         let wordInstances = {};
         let sortableWordInstances = [];
         for(let sender in messageData){
-            wordInstances[sender]={};
+            wordInstances[sender] = {};
         }
         for(let sender in messageData){
             for(let message of messageData[sender]){
-                // if(message['dateMs'] >= startDate && message['dateMs' <= endDate]){
+                if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
                     for(let word of message['words']){
                        if(word in wordInstances[sender]){
                            wordInstances[sender][word] = wordInstances[sender][word] + 1;
@@ -89,7 +126,7 @@ let messageAnalyzer = {
                            wordInstances[sender][word] = 1
                        }
                     }
-                // }
+                }
             }
         }
         console.log(wordInstances)
@@ -107,14 +144,17 @@ let messageAnalyzer = {
     rankDays: function(){
 //*add rankDays function here and return the result
     },
-//*This should run all the functions and then display them in a really nice and easy to read multi line string. The functions themselves should return the data objects. 
+//*This should run all the functions and then display them in a really nice and easy to read multi line string. The functions themselves should return the data objects. This might show less than the data objects, for example only the top 10 most used words. 
+//*set defaults for variables?
     analyzeData: function(startDate, endDate, wordsToSkip){
         this.rankWords();
         this.rankDays();
 // *Add all analysis functions here
     }
 }
-messageAnalyzer.rankWords()
+console.log(messageAnalyzer.countWords(1642375751538, 1642375757314))
+// messageAnalyzer.logData()
+
 
 
 // //create a different method for each analysis and have analysis method call each one. Each method should return the data and to view it log the analysis method
