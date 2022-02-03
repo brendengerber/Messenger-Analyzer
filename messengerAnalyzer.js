@@ -12,6 +12,7 @@
 
 
 let messageAnalyzer = {
+//* luckily this does catch her =.= but only because it's symbols, not because it's emoji, any way to catch everything that even might include letters like o.o
     parseFiles: function(){
         let messagesData = {};
         //Regex to match current and retired Facebook emoticons (not emoji) as of 01/01/2022
@@ -24,10 +25,7 @@ let messageAnalyzer = {
         fileNames.forEach(file => {
             filesObject[file] = require('./messages/'+ file);
         });
-        //Loop through filesObject and creates messagesData which contains only the desired data from all JSON files in filesObject
-        //Remove messages with no text i.e. only media files(undefined), reactions(Reacted), links(https), or emoticons (both sequential or separated by spaces)
-        //Create an array of all individual words for each message, while stripping them of special characters (except apostrophe), whitespace, newlines, emoticons, and capital letters
-        //* luckily this does catch her =.= but only because it's symbols, not because it's emoji, any way to catch everything that even might include letters like o.o
+        //Loop through filesObject and add only the desired data from all JSON files in filesObject to messagesData
         //Add 'participants' from each file to messagesData as 'sender'
         for(let file in filesObject){
             for(let participant of filesObject[file]['participants']){
@@ -43,7 +41,7 @@ let messageAnalyzer = {
                 //Check if message is undefined, empty, or of the wrong type (i.e. share) and continues if so  
                 if( message['content'] === '' || message['content'] === undefined || message['type'] !== 'Generic') {
                     continue
-                //Add message to messagesData
+                //Add message to messagesData as an array of seperate words
                 }else{
                     messagesData[message['sender_name']] = messagesData[message['sender_name']].concat([{dateMs: message['timestamp_ms'], words: message['content'].split(' ')}]);
                 }
