@@ -62,26 +62,26 @@ let messageAnalyzer = {
         console.dir(require('./data/data.json'),{ depth: null });
     },
     //Count the messages sent by each sender as well as the total
-    countWords: function(startDate = 0 - Infinity, endDate = Infinity){
+    countMessages: function(startDate = 0 - Infinity, endDate = Infinity){
         this.checkForDataFile();
         let messageData = require('./data/data.json');
-        let wordCounts = {};
+        let messageCounts = {};
         for(let sender in messageData){
-            wordCounts[sender] = 0;
+            messageCounts[sender] = 0;
         }
         for(let sender in messageData){
             for(let message of messageData[sender]){
                 if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
-                    wordCounts[sender] += 1
+                    messageCounts[sender] += 1;
                 }
             }
         }
         let total = 0;
-        for(let sender in wordCounts){
-            total += wordCounts[sender];
+        for(let sender in messageCounts){
+            total += messageCounts[sender];
         }
-        wordCounts['total'] = total
-        return wordCounts
+        messageCounts['total'] = total;
+        return messageCounts
     },
     
 
@@ -93,41 +93,55 @@ let messageAnalyzer = {
 
 
 
-//* this is working (but needs to be ordered still...sort the object's keys by their value)
 //* user input needs to be converted to ms and it will work flawlessly
-//* need to add words to skip
 //* https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
-//* set defaults for dates?
 //* Times in messenger are already converted to UTC, dates parsed without timezone are assumed to be UTC as well?
     rankWords: function(startDate = 0 - Infinity, endDate = Infinity, wordsToSkip = []){
         this.checkForDataFile();
         let messageData = require('./data/data.json');
         let wordInstances = {};
-        let sortableWordInstances = [];
+        let sortedWordInstances = {};
         for(let sender in messageData){
             wordInstances[sender] = {};
         }
+        //Add words to wordInstances and increment the counter if the word is already present
         for(let sender in messageData){
             for(let message of messageData[sender]){
                 if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
                     for(let word of message['words']){
-                       if(word in wordInstances[sender] && !(word in wordsToSkip)){
+                        if(wordsToSkip.includes(word)){
+                            continue
+                        }else if(word in wordInstances[sender]){
                            wordInstances[sender][word] = wordInstances[sender][word] + 1;
                        }else{
-                           wordInstances[sender][word] = 1
+                           wordInstances[sender][word] = 1;
                        }
                     }
                 }
             }
         }
-        console.log(wordInstances)
+        //converts the objects for each sender into a sortable array and sorts the words in decending order by the number of times they were sent
+        for(sender in wordInstances){
+            sortedWordInstances[sender] = Object.entries(wordInstances[sender]).sort((a,b)=> b[1] - a[1]);
+        }
+        return sortedWordInstances;
     },
 
 
 
-
-
-
+    // for(let sender in wordInstances){
+    //     sortableWordInstances[sender] = Object.keys(wordInstances[sender]).map(i => wordInstances[sender][i]);
+    // }
+    // for(let sender in wordInstances){
+    //     sortableWordInstances[sender] = [];
+    //     for(word in wordInstances[sender]){
+    //         let wordObject = {};
+    //         wordObject[word] = wordInstances[sender][word]};
+    //         sortableWordInstances[sender].push(wordObject);
+    //     }
+    // }
+    // console.log(wordInstances);
+    // console.log(sortableWordInstances);
 
 
 
@@ -138,16 +152,18 @@ let messageAnalyzer = {
 //*This should run all the functions and then display them in a really nice and easy to read multi line string. The functions themselves should return the data objects. This might show less than the data objects, for example only the top 10 most used words. 
 //*set defaults for variables?
     analyzeData: function(startDate = 0 - Infinity, endDate = Infinity, wordsToSkip = []){
-        this.rankWords();
+        this.rankWords(startDate, endDate, wordsToSkip);
+        this.countMessages(startDate, endDate, wordsToSkip);
         this.rankDays();
 // *Add all analysis functions here
     }
 }
-messageAnalyzer.rankWords(1642375751538, 1642375757314)
+// console.log(messageAnalyzer.rankWords(0-Infinity, Infinity, ['the', 'a', 'an', 'and', 'or', 'to', 'for', 'in']))
 // console.log(messageAnalyzer.countWords(1642375751538, 1642375757314))
+console.log(messageAnalyzer.countMessages())
 
 
-
+// // add a method to check the count for a specific word checkCount(word)
 
 // //create a different method for each analysis and have analysis method call each one. Each method should return the data and to view it log the analysis method
 
@@ -159,5 +175,5 @@ messageAnalyzer.rankWords(1642375751538, 1642375757314)
 
 // //add An error has occured message to each function at the end of if else, as a catch all? or maybe it is just needed on the analyze file. Otherwise the data file either exists or it doesn't
 
-
+// average words per message, who is more verbose
 
