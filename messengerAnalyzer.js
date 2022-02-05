@@ -1,18 +1,16 @@
-//add messengerAnalyzer.analyze(startDate, endDate, wordsToSkip)(returns the results) messengerAnalyzer.data() (returns the data) and use let data = this.data in .analyze().
-//Use getters and setters, especially for dates since you will need to convert to ms
-//add logic to count messages per day average for each sender
-//add logic to count the most used words for each sender
-//add logic to count total messages sent for each sender
-//add all below into a function with parameters 'dateStart', 'dateEnd', 'wordsToOmit' (which is an array of common words like the, a, an and will be used when looping the final words array and counting words 'if not in wordsToOmit')
-//determine dataset date range and display a message if the range input is outside that range?
-//writeFile vs writeFileSync
-//This function can save those objects to variables maybe. It would also be nice to create later a csv function that would write the data objects returned by each function.
-//is there a way to create a new data file if things have changed?
-
+//https://stackoverflow.com/questions/20630676/how-to-group-objects-with-timestamps-properties-by-day-week-month/38896252
+//convert standard to unix using moment
+//is the reason the conversion is coming out wrong because the timestamp was converted to local time already? that could make it easier, https://www.epochconverter.com/timezones
+//otherwise convert it and then sort it
+//it appears as if the timestamp is local time
+//https://stackoverflow.com/questions/45973081/how-do-i-convert-the-timestamp-of-facebook-message-object
+//Times for messenger are for the time zone where you were when you downloaded the data, if you have changed timezones then you may need to convert the time/date you enter to reflect that
+//https://www.timeanddate.com/worldclock/converter.html?iso=20220205T070000&p1=142&p2=218
+//Here is a handy tool. Just enter the time in the other zone that you want to use, and then use the time displayed for your local time in this script
+//make a method using moment to convert the time which can also be used multiple times within other functions to convert the optional time zone parameter.
 
 
 let messageAnalyzer = {
-//* luckily this does catch her =.= but only because it's symbols, not because it's emoji, any way to catch everything that even might include letters like o.o
     parseFiles: function(){
         let messagesData = {};
         //Regex to match current and retired Facebook emoticons (not emoji) as of 01/01/2022
@@ -61,14 +59,19 @@ let messageAnalyzer = {
         this.checkForDataFile();
         console.dir(require('./data/data.json'),{ depth: null });
     },
+    convertDate: function(){
+//*Add date timezone conversion function here
+    },
     //Count the messages sent by each sender as well as the total
     countMessages: function(startDate = 0 - Infinity, endDate = Infinity){
         this.checkForDataFile();
         let messageData = require('./data/data.json');
         let messageCounts = {};
+        //Add senders to messageCounts object and sets count to 0
         for(let sender in messageData){
             messageCounts[sender] = 0;
         }
+        //Increments the counter for each message sent by each sender
         for(let sender in messageData){
             for(let message of messageData[sender]){
                 if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
@@ -76,6 +79,7 @@ let messageAnalyzer = {
                 }
             }
         }
+        //Calculate the total combined messages sent
         let total = 0;
         for(let sender in messageCounts){
             total += messageCounts[sender];
@@ -83,24 +87,13 @@ let messageAnalyzer = {
         messageCounts['total'] = total;
         return messageCounts
     },
-    
-
-
-
-
-
-
-
-
-
-//* user input needs to be converted to ms and it will work flawlessly
-//* https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
-//* Times in messenger are already converted to UTC, dates parsed without timezone are assumed to be UTC as well?
+    //Rank words of each sender based usage and order them in decending order
     rankWords: function(startDate = 0 - Infinity, endDate = Infinity, wordsToSkip = []){
         this.checkForDataFile();
         let messageData = require('./data/data.json');
         let wordInstances = {};
         let sortedWordInstances = {};
+        //Add senders to wordInstances object
         for(let sender in messageData){
             wordInstances[sender] = {};
         }
@@ -126,29 +119,76 @@ let messageAnalyzer = {
         }
         return sortedWordInstances;
     },
-
-
-
-    // for(let sender in wordInstances){
-    //     sortableWordInstances[sender] = Object.keys(wordInstances[sender]).map(i => wordInstances[sender][i]);
-    // }
-    // for(let sender in wordInstances){
-    //     sortableWordInstances[sender] = [];
-    //     for(word in wordInstances[sender]){
-    //         let wordObject = {};
-    //         wordObject[word] = wordInstances[sender][word]};
-    //         sortableWordInstances[sender].push(wordObject);
-    //     }
-    // }
-    // console.log(wordInstances);
-    // console.log(sortableWordInstances);
-
-
-
-
-    rankDays: function(){
-//*add rankDays function here and return the result
+    //Calculate the average number of words per message for each sender
+    averageWords: function(startDate = 0 - Infinity, endDate = Infinity){
+        this.checkForDataFile();
+        let messageData = require('./data/data.json');
+        let averageWordsPerMessage = {};
+        //Add senders to AverageWordsPerMessage object
+        for(let sender in messageData){
+            averageWordsPerMessage[sender] = {};
+        }
+        //Increment the word and message counters for each sender and calculate the average words per message
+        for(let sender in messageData){
+            let totalMessages = 0;
+            let totalWords = 0;
+            for(let message of messageData[sender]){
+                if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
+                    totalMessages += 1;
+                    for(word of message['words']){
+                        totalWords += 1;
+                    }
+                }
+                averageWordsPerMessage[sender] = totalWords / totalMessages;
+            }
+        }
+        return averageWordsPerMessage
     },
+    //Calculate the number of messages sent each day of the week by each sender
+    rankDays: function(startDate = 0 - Infinity, endDate = Infinity, timeZone = undefined){
+        const moment = require("./node_modules/moment")
+        this.checkForDataFile();
+        let messageData = require('./data/data.json');
+        let rankedDays = {};
+        //Add senders to rankedDays object
+        for(let sender in messageData){
+            rankedDays[sender] = {Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0, Saturday: 0, Sunday:0}
+        }
+        //Loop through all messages for each sender, access the timestamp property, and increment the appropriate day of the week
+        for(let sender in messageData){
+            for(let message of messageData[sender]){
+                if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
+                    let day = moment.unix(message['dateMs']/1000).isoWeekday();
+                    switch (day){
+                        case 1:
+                            rankedDays[sender]['Monday'] += 1;
+                            break;
+                        case 2:
+                            rankedDays[sender]['Tuesday'] += 1;
+                            break;  
+                        case 3:
+                            rankedDays[sender]['Wednesday'] += 1;
+                            break;
+                        case 4:
+                            rankedDays[sender]['Thursday'] += 1;
+                            break;
+                        case 5:
+                            rankedDays[sender]['Friday'] += 1;
+                            break;   
+                        case 6:
+                            rankedDays[sender]['Saturday'] += 1;
+                            break;
+                        case 7:
+                            rankedDays[sender]['Sunday'] += 1;
+                            break;
+                    }
+
+                }
+            }
+        }
+        return rankedDays
+    },
+
 //*This should run all the functions and then display them in a really nice and easy to read multi line string. The functions themselves should return the data objects. This might show less than the data objects, for example only the top 10 most used words. 
 //*set defaults for variables?
     analyzeData: function(startDate = 0 - Infinity, endDate = Infinity, wordsToSkip = []){
@@ -158,22 +198,43 @@ let messageAnalyzer = {
 // *Add all analysis functions here
     }
 }
-// console.log(messageAnalyzer.rankWords(0-Infinity, Infinity, ['the', 'a', 'an', 'and', 'or', 'to', 'for', 'in']))
-// console.log(messageAnalyzer.countWords(1642375751538, 1642375757314))
-console.log(messageAnalyzer.countMessages())
 
+
+console.log(messageAnalyzer.rankDays())
+// console.log(messageAnalyzer.averageWords(1642375751538,1642375757314))
+// console.log(messageAnalyzer.rankWords('16 January 2022 17:29:11', 'Sun 16 January 2022 17:29:17', ['the', 'a', 'an', 'and', 'or', 'to', 'for', 'in']))
+// console.log(messageAnalyzer.rankWords(1642375751538, 1642375757314, ['the', 'a', 'an', 'and', 'or', 'to', 'for', 'in']))
+// console.log(messageAnalyzer.countWords(1642375751538, 1642375757314))
+// console.log(messageAnalyzer.countMessages())
+
+// console.log(Date.parse('Sun, 16 Jan 2022 23:29:17 GMT'))
+// console.log(new Date().toUTCString())
+
+
+//add messengerAnalyzer.analyze(startDate, endDate, wordsToSkip)(returns the results) messengerAnalyzer.data() (returns the data) and use let data = this.data in .analyze().
+//Use getters and setters, especially for dates since you will need to convert to ms
+//add logic to count messages per day average for each sender
+//add logic to count the most used words for each sender
+//add logic to count total messages sent for each sender
+//add all below into a function with parameters 'dateStart', 'dateEnd', 'wordsToOmit' (which is an array of common words like the, a, an and will be used when looping the final words array and counting words 'if not in wordsToOmit')
+//determine dataset date range and display a message if the range input is outside that range?
+//writeFile vs writeFileSync
+//This function can save those objects to variables maybe. It would also be nice to create later a csv function that would write the data objects returned by each function.
+//is there a way to create a new data file if things have changed?
+//descrpitions for parameters
 
 // // add a method to check the count for a specific word checkCount(word)
 
 // //create a different method for each analysis and have analysis method call each one. Each method should return the data and to view it log the analysis method
 
-// // loop through if the word exists totalNumber ++ if not then add it. then organize it in another loop
-
 // // similar list of objects but for the days of the week. is the ms a monday? if so monday ++. Look up if there is a way to check day of the week for ms time.
 
-// //look up best way to organize an array by rank and apply it to my mini objects, by calculating the value of the object first and using that to sort
-
 // //add An error has occured message to each function at the end of if else, as a catch all? or maybe it is just needed on the analyze file. Otherwise the data file either exists or it doesn't
+//error message for invalid date
+//luckily parse does catch her =.= but only because it's symbols, not because it's emoji, any way to catch everything that even might include letters like o.o
 
-// average words per message, who is more verbose
+//useful discussion
+// https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
+//https://stackoverflow.com/questions/20630676/how-to-group-objects-with-timestamps-properties-by-day-week-month/38896252
+
 
