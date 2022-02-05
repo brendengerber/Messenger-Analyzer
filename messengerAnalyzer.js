@@ -186,6 +186,14 @@ let messageAnalyzer = {
                 }
             }
         }
+        //Calculate the total for each day of the week
+        let total = {Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0, Saturday: 0, Sunday:0}
+        for(let sender in rankedDays){
+            for(day in rankedDays[sender]){
+                total[day] += rankedDays[sender][day]
+            }
+        }
+        rankedDays['total'] = total
         return rankedDays
     },
 
@@ -200,7 +208,7 @@ let messageAnalyzer = {
 }
 
 
-console.log(messageAnalyzer.rankDays())
+console.log(messageAnalyzer.countMessages())
 // console.log(messageAnalyzer.averageWords(1642375751538,1642375757314))
 // console.log(messageAnalyzer.rankWords('16 January 2022 17:29:11', 'Sun 16 January 2022 17:29:17', ['the', 'a', 'an', 'and', 'or', 'to', 'for', 'in']))
 // console.log(messageAnalyzer.rankWords(1642375751538, 1642375757314, ['the', 'a', 'an', 'and', 'or', 'to', 'for', 'in']))
@@ -210,12 +218,9 @@ console.log(messageAnalyzer.rankDays())
 // console.log(Date.parse('Sun, 16 Jan 2022 23:29:17 GMT'))
 // console.log(new Date().toUTCString())
 
-
+//add timezone support
 //add messengerAnalyzer.analyze(startDate, endDate, wordsToSkip)(returns the results) messengerAnalyzer.data() (returns the data) and use let data = this.data in .analyze().
 //Use getters and setters, especially for dates since you will need to convert to ms
-//add logic to count messages per day average for each sender
-//add logic to count the most used words for each sender
-//add logic to count total messages sent for each sender
 //add all below into a function with parameters 'dateStart', 'dateEnd', 'wordsToOmit' (which is an array of common words like the, a, an and will be used when looping the final words array and counting words 'if not in wordsToOmit')
 //determine dataset date range and display a message if the range input is outside that range?
 //writeFile vs writeFileSync
