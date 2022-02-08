@@ -1,10 +1,14 @@
-//https://stackoverflow.com/questions/20630676/how-to-group-objects-with-timestamps-properties-by-day-week-month/38896252
-//it appears as if the timestamp is local time
+
 //https://stackoverflow.com/questions/45973081/how-do-i-convert-the-timestamp-of-facebook-message-object
-//Times for messenger are for the time zone where you were when you downloaded the data, if you have changed timezones then you may need to convert the time/date you enter to reflect that
 //https://www.timeanddate.com/worldclock/converter.html?iso=20220205T070000&p1=142&p2=218
 //Here is a handy tool. Just enter the time in the other zone that you want to use, and then use the time displayed for your local time in this script
 //make a method using moment to convert the time which can also be used multiple times within other functions to convert the optional time zone parameter.
+
+
+
+//times in messenger are stored in UTC and moment automatically converts it to local timezone
+//*the .utc() method keeps it as is
+//*If you want to analyze for any other time besides the local time include a timezone parameter which will be input into the moment function
 
 //start time Dec 04, 2013 11:00
 //end time Dec 05, 2017 10:59
@@ -12,7 +16,13 @@
 //start time Dec 04, 2013 11:00
 //end time Dec 05, 2021 10:59
 
+//is there a way to use the default parameters, and then enter the last one manually?
 
+//add date formatting and date formatting/timezone comment info
+
+
+//If no time zone is specified, calculations will be done in local time
+//If no date range is given the entire conversation history will be analyzed
 let messageAnalyzer = {
     parseFiles: function(){
         let messagesData = {};
@@ -62,14 +72,16 @@ let messageAnalyzer = {
         this.checkForDataFile();
         console.dir(require('./data/data.json'),{ depth: null });
     },
-    convertDate: function(){
-
-
-
-//*convert vietnam time to CST and then set a moment to that time and date (as if it were UST)
-
-
-//*Add date timezone conversion function here
+    //Convert date range timestamp and converts to different timezone if necessary
+    //*How to handle default infinit statements here
+    setDates: function(startDate, endDate, timezone){
+        if(timezone === undefined){
+            startDate = moment(startDate, "M/D/YYYY H:mm:ss").valueOf()
+            endDate = moment(endDate, "M/D/YYYY H:mm:ss").valueOf()
+        } else {
+            startDate = moment.tz(startDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
+            endDate = moment.tz(endDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
+        }
     },
     //Count the messages sent by each sender as well as the total
     countMessages: function(startDate = 0 - Infinity, endDate = Infinity){
@@ -154,10 +166,11 @@ let messageAnalyzer = {
         return averageWordsPerMessage
     },
     //Calculate the number of messages sent each day of the week by each sender
-    rankDays: function(startDate = 0 - Infinity, endDate = Infinity, timeZone = undefined){
-        const moment = require("./node_modules/moment")
+    //*Can I change UTC to "local time"
+    rankDays: function(startDate = 0 - Infinity, endDate = Infinity, timezone = undefined){
         this.checkForDataFile();
         let messageData = require('./data/data.json');
+        const moment = require('moment-timezone');
         let rankedDays = {};
         //Add senders to rankedDays object
         for(let sender in messageData){
@@ -167,8 +180,13 @@ let messageAnalyzer = {
         for(let sender in messageData){
             for(let message of messageData[sender]){
                 if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
-                    let day = moment(message['dateMs']).isoWeekday();
-                    switch (day){
+                    let day = undefined
+                    if(timezone === undefined){
+                        day = moment(message['dateMs']).isoWeekday();
+                    } else {
+                        day = moment.tz(message['dateMs'], timezone).isoWeekday();
+                    }
+                    switch(day){
                         case 1:
                             rankedDays[sender]['Monday'] += 1;
                             break;
@@ -220,7 +238,7 @@ let messageAnalyzer = {
 }
 
 
-console.log(messageAnalyzer.rankDays())
+console.log(messageAnalyzer.rankDays(0-Infinity, Infinity, "Asia/Ho_Chi_Minh"))
 
 
 //create "data" directory when parsing, that makes it easier if you want to analyzer a different convo, you can just delete everything in messages directory
