@@ -1,13 +1,16 @@
 //https://stackoverflow.com/questions/20630676/how-to-group-objects-with-timestamps-properties-by-day-week-month/38896252
-//convert standard to unix using moment
-//is the reason the conversion is coming out wrong because the timestamp was converted to local time already? that could make it easier, https://www.epochconverter.com/timezones
-//otherwise convert it and then sort it
 //it appears as if the timestamp is local time
 //https://stackoverflow.com/questions/45973081/how-do-i-convert-the-timestamp-of-facebook-message-object
 //Times for messenger are for the time zone where you were when you downloaded the data, if you have changed timezones then you may need to convert the time/date you enter to reflect that
 //https://www.timeanddate.com/worldclock/converter.html?iso=20220205T070000&p1=142&p2=218
 //Here is a handy tool. Just enter the time in the other zone that you want to use, and then use the time displayed for your local time in this script
 //make a method using moment to convert the time which can also be used multiple times within other functions to convert the optional time zone parameter.
+
+//start time Dec 04, 2013 11:00
+//end time Dec 05, 2017 10:59
+
+//start time Dec 04, 2013 11:00
+//end time Dec 05, 2021 10:59
 
 
 let messageAnalyzer = {
@@ -60,6 +63,12 @@ let messageAnalyzer = {
         console.dir(require('./data/data.json'),{ depth: null });
     },
     convertDate: function(){
+
+
+
+//*convert vietnam time to CST and then set a moment to that time and date (as if it were UST)
+
+
 //*Add date timezone conversion function here
     },
     //Count the messages sent by each sender as well as the total
@@ -158,7 +167,7 @@ let messageAnalyzer = {
         for(let sender in messageData){
             for(let message of messageData[sender]){
                 if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
-                    let day = moment.unix(message['dateMs']/1000).isoWeekday();
+                    let day = moment(message['dateMs']).isoWeekday();
                     switch (day){
                         case 1:
                             rankedDays[sender]['Monday'] += 1;
@@ -182,7 +191,6 @@ let messageAnalyzer = {
                             rankedDays[sender]['Sunday'] += 1;
                             break;
                     }
-
                 }
             }
         }
@@ -200,28 +208,26 @@ let messageAnalyzer = {
 //*This should run all the functions and then display them in a really nice and easy to read multi line string. The functions themselves should return the data objects. This might show less than the data objects, for example only the top 10 most used words. 
 //*set defaults for variables?
     analyzeData: function(startDate = 0 - Infinity, endDate = Infinity, wordsToSkip = []){
-        this.rankWords(startDate, endDate, wordsToSkip);
-        this.countMessages(startDate, endDate, wordsToSkip);
-        this.rankDays();
+        let string = ''
+        let rankedWords = this.rankWords(startDate, endDate, wordsToSkip);
+        //* loop and add formatted string for each sender including \n.
+        let countedMessages = this.countMessages(startDate, endDate, wordsToSkip);
+        let rankedDays = this.rankDays();
+        let averagedWords = this.averageWords();
+        console.log(string);
 // *Add all analysis functions here
     }
 }
 
 
-console.log(messageAnalyzer.countMessages())
-// console.log(messageAnalyzer.averageWords(1642375751538,1642375757314))
-// console.log(messageAnalyzer.rankWords('16 January 2022 17:29:11', 'Sun 16 January 2022 17:29:17', ['the', 'a', 'an', 'and', 'or', 'to', 'for', 'in']))
-// console.log(messageAnalyzer.rankWords(1642375751538, 1642375757314, ['the', 'a', 'an', 'and', 'or', 'to', 'for', 'in']))
-// console.log(messageAnalyzer.countWords(1642375751538, 1642375757314))
-// console.log(messageAnalyzer.countMessages())
+console.log(messageAnalyzer.rankDays())
 
-// console.log(Date.parse('Sun, 16 Jan 2022 23:29:17 GMT'))
-// console.log(new Date().toUTCString())
 
+//create "data" directory when parsing, that makes it easier if you want to analyzer a different convo, you can just delete everything in messages directory
+//
 //add timezone support
 //add messengerAnalyzer.analyze(startDate, endDate, wordsToSkip)(returns the results) messengerAnalyzer.data() (returns the data) and use let data = this.data in .analyze().
 //Use getters and setters, especially for dates since you will need to convert to ms
-//add all below into a function with parameters 'dateStart', 'dateEnd', 'wordsToOmit' (which is an array of common words like the, a, an and will be used when looping the final words array and counting words 'if not in wordsToOmit')
 //determine dataset date range and display a message if the range input is outside that range?
 //writeFile vs writeFileSync
 //This function can save those objects to variables maybe. It would also be nice to create later a csv function that would write the data objects returned by each function.
@@ -232,14 +238,12 @@ console.log(messageAnalyzer.countMessages())
 
 // //create a different method for each analysis and have analysis method call each one. Each method should return the data and to view it log the analysis method
 
-// // similar list of objects but for the days of the week. is the ms a monday? if so monday ++. Look up if there is a way to check day of the week for ms time.
-
 // //add An error has occured message to each function at the end of if else, as a catch all? or maybe it is just needed on the analyze file. Otherwise the data file either exists or it doesn't
 //error message for invalid date
 //luckily parse does catch her =.= but only because it's symbols, not because it's emoji, any way to catch everything that even might include letters like o.o
 
 //useful discussion
-// https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
+//https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
 //https://stackoverflow.com/questions/20630676/how-to-group-objects-with-timestamps-properties-by-day-week-month/38896252
 
 
