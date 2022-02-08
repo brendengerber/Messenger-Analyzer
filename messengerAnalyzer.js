@@ -4,7 +4,7 @@
 //Here is a handy tool. Just enter the time in the other zone that you want to use, and then use the time displayed for your local time in this script
 //make a method using moment to convert the time which can also be used multiple times within other functions to convert the optional time zone parameter.
 
-
+//*check require are they const or let? make sure the same. For example message data could be const right?
 
 //times in messenger are stored in UTC and moment automatically converts it to local timezone
 //*the .utc() method keeps it as is
@@ -75,14 +75,31 @@ let messageAnalyzer = {
     //Convert date range timestamp and converts to different timezone if necessary
     //*How to handle default infinit statements here
     setDates: function(startDate, endDate, timezone){
-        if(timezone === undefined){
+        if(startDate === 'infinity' && endDate === 'infinity'){
+            startDate = 0 - Infinity
+            endDate = Infinity
+        } else if (startDate !== 'infinity' && endDate === 'infinity' && timezone === undefined){
+            startDate = moment(startDate, "M/D/YYYY H:mm:ss").valueOf()
+            endDate = Infinity
+        } else if (startDate === 'infinity' && endDate !== 'infinity' && timezone === undefined){
+            startDate = 0 - Infinity
+            endDate = moment(endDate, "M/D/YYYY H:mm:ss").valueOf()
+        } else if (startDate !== 'infinity' && endDate !== 'infinity' && timezone === undefined){
             startDate = moment(startDate, "M/D/YYYY H:mm:ss").valueOf()
             endDate = moment(endDate, "M/D/YYYY H:mm:ss").valueOf()
-        } else {
+        } else if (startDate !== 'infinity' && endDate === 'infinity' && timezone !== undefined){
+            startDate = moment.tz(startDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
+            endDate = Infinity
+        } else if (startDate === 'infinity' && endDate !== 'infinity' && timezone !== undefined){
+            startDate = 0 - Infinity
+            endDate = moment.tz(endDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
+        } else if (startDate !== 'infinity' && endDate !== 'infinity' && timezone !== undefined){
             startDate = moment.tz(startDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
             endDate = moment.tz(endDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
+    
         }
     },
+        
     //Count the messages sent by each sender as well as the total
     countMessages: function(startDate = 0 - Infinity, endDate = Infinity){
         this.checkForDataFile();
@@ -168,9 +185,9 @@ let messageAnalyzer = {
     //Calculate the number of messages sent each day of the week by each sender
     //*Can I change UTC to "local time"
     rankDays: function(startDate = 0 - Infinity, endDate = Infinity, timezone = undefined){
+        const moment = require('moment-timezone');
         this.checkForDataFile();
         let messageData = require('./data/data.json');
-        const moment = require('moment-timezone');
         let rankedDays = {};
         //Add senders to rankedDays object
         for(let sender in messageData){
@@ -180,6 +197,7 @@ let messageAnalyzer = {
         for(let sender in messageData){
             for(let message of messageData[sender]){
                 if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
+                    //Determine day of the week that the message was sent (including timezone if necessary)
                     let day = undefined
                     if(timezone === undefined){
                         day = moment(message['dateMs']).isoWeekday();
@@ -238,7 +256,7 @@ let messageAnalyzer = {
 }
 
 
-console.log(messageAnalyzer.rankDays(0-Infinity, Infinity, "Asia/Ho_Chi_Minh"))
+console.log(messageAnalyzer.rankDays())
 
 
 //create "data" directory when parsing, that makes it easier if you want to analyzer a different convo, you can just delete everything in messages directory
