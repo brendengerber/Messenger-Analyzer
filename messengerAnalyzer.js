@@ -19,7 +19,7 @@
 //is there a way to use the default parameters, and then enter the last one manually?
 
 //add date formatting and date formatting/timezone comment info
-
+//*add properties to beginning and add messageObject as a property too? Perhaps set to an if/else statement, if data exists = data, else = undefined
 
 //If no time zone is specified, calculations will be done in local time
 //If no date range is given the entire conversation history will be analyzed
@@ -72,39 +72,42 @@ let messageAnalyzer = {
         this.checkForDataFile();
         console.dir(require('./data/data.json'),{ depth: null });
     },
-    //Convert date range timestamp and converts to different timezone if necessary
-    //*How to handle default infinit statements here
+    //Convert date range to timestamp and converts to different timezone if necessary
+    //Sets date properties accordingly to be accessed by all methods
+    startTimestamp: undefined,
+    endTimestamp: undefined,
+    timezone: undefined,
     setDates: function(startDate, endDate, timezone){
+        let moment = require('moment-timezone')
         if(startDate === 'infinity' && endDate === 'infinity'){
-            startDate = 0 - Infinity
-            endDate = Infinity
-        } else if (startDate !== 'infinity' && endDate === 'infinity' && timezone === undefined){
-            startDate = moment(startDate, "M/D/YYYY H:mm:ss").valueOf()
-            endDate = Infinity
-        } else if (startDate === 'infinity' && endDate !== 'infinity' && timezone === undefined){
-            startDate = 0 - Infinity
-            endDate = moment(endDate, "M/D/YYYY H:mm:ss").valueOf()
-        } else if (startDate !== 'infinity' && endDate !== 'infinity' && timezone === undefined){
-            startDate = moment(startDate, "M/D/YYYY H:mm:ss").valueOf()
-            endDate = moment(endDate, "M/D/YYYY H:mm:ss").valueOf()
-        } else if (startDate !== 'infinity' && endDate === 'infinity' && timezone !== undefined){
-            startDate = moment.tz(startDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
-            endDate = Infinity
-        } else if (startDate === 'infinity' && endDate !== 'infinity' && timezone !== undefined){
-            startDate = 0 - Infinity
-            endDate = moment.tz(endDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
-        } else if (startDate !== 'infinity' && endDate !== 'infinity' && timezone !== undefined){
-            startDate = moment.tz(startDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
-            endDate = moment.tz(endDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
-    
+            this.startTimestamp = 0 - Infinity
+            this.endTimestamp = Infinity
+        } else if (startDate !== 'infinity' && endDate === 'infinity' && timezone === 'local'){
+            this.startTimestamp = moment(startDate, "M/D/YYYY H:mm:ss").valueOf()
+            this.endTimestamp = Infinity
+        } else if (startDate === 'infinity' && endDate !== 'infinity' && timezone === 'local'){
+            this.startTimestamp = 0 - Infinity
+            this.endTimestamp = moment(endDate, "M/D/YYYY H:mm:ss").valueOf()
+        } else if (startDate !== 'infinity' && endDate !== 'infinity' && timezone === 'local'){
+            this.startTimestamp = moment(startDate, "M/D/YYYY H:mm:ss").valueOf()
+            this.endTimestamp = moment(endDate, "M/D/YYYY H:mm:ss").valueOf()
+        } else if (startDate !== 'infinity' && endDate === 'infinity' && timezone !== 'local'){
+            this.startTimestamp = moment.tz(startDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
+            this.endTimestamp = Infinity
+        } else if (startDate === 'infinity' && endDate !== 'infinity' && timezone !== 'local'){
+            this.startTimestamp = 0 - Infinity
+            this.endTimestamp = moment.tz(endDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
+        } else if (startDate !== 'infinity' && endDate !== 'infinity' && timezone !== 'local'){
+            this.startTimestamp = moment.tz(startDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
+            this.endTimestamp = moment.tz(endDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
         }
     },
-        
     //Count the messages sent by each sender as well as the total
-    countMessages: function(startDate = 0 - Infinity, endDate = Infinity){
+    countMessages: function(startDate = 'infinity', endDate = 'infinity', timezone = 'local'){
         this.checkForDataFile();
         let messageData = require('./data/data.json');
         let messageCounts = {};
+        this.setDates(startDate, endDate, timezone)
         //Add senders to messageCounts object and sets count to 0
         for(let sender in messageData){
             messageCounts[sender] = 0;
@@ -112,7 +115,7 @@ let messageAnalyzer = {
         //Increments the counter for each message sent by each sender
         for(let sender in messageData){
             for(let message of messageData[sender]){
-                if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
+                if(message['dateMs'] >= this.startTimestamp && message['dateMs'] <= this.endTimestamp){
                     messageCounts[sender] += 1;
                 }
             }
@@ -126,11 +129,12 @@ let messageAnalyzer = {
         return messageCounts
     },
     //Rank words of each sender based usage and order them in decending order
-    rankWords: function(startDate = 0 - Infinity, endDate = Infinity, wordsToSkip = []){
+    rankWords: function(startDate = 'infinity', endDate = 'infinity', timezone = 'local', wordsToSkip = []){
         this.checkForDataFile();
         let messageData = require('./data/data.json');
         let wordInstances = {};
         let sortedWordInstances = {};
+        this.setDates(startDate, endDate, timezone)
         //Add senders to wordInstances object
         for(let sender in messageData){
             wordInstances[sender] = {};
@@ -138,7 +142,7 @@ let messageAnalyzer = {
         //Add words to wordInstances and increment the counter if the word is already present
         for(let sender in messageData){
             for(let message of messageData[sender]){
-                if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
+                if(message['dateMs'] >= this.startTimestamp && message['dateMs'] <= this.endTimestamp){
                     for(let word of message['words']){
                         if(wordsToSkip.includes(word)){
                             continue
@@ -158,10 +162,11 @@ let messageAnalyzer = {
         return sortedWordInstances;
     },
     //Calculate the average number of words per message for each sender
-    averageWords: function(startDate = 0 - Infinity, endDate = Infinity){
+    averageWords: function(startDate = 'infinity', endDate = 'infinity', timezone = 'local'){
         this.checkForDataFile();
         let messageData = require('./data/data.json');
         let averageWordsPerMessage = {};
+        this.setDates(startDate, endDate, timezone)
         //Add senders to AverageWordsPerMessage object
         for(let sender in messageData){
             averageWordsPerMessage[sender] = {};
@@ -171,7 +176,7 @@ let messageAnalyzer = {
             let totalMessages = 0;
             let totalWords = 0;
             for(let message of messageData[sender]){
-                if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
+                if(message['dateMs'] >= this.startTimestamp && message['dateMs'] <= this.endTimestamp){
                     totalMessages += 1;
                     for(word of message['words']){
                         totalWords += 1;
@@ -183,10 +188,10 @@ let messageAnalyzer = {
         return averageWordsPerMessage
     },
     //Calculate the number of messages sent each day of the week by each sender
-    //*Can I change UTC to "local time"
-    rankDays: function(startDate = 0 - Infinity, endDate = Infinity, timezone = undefined){
+    rankDays: function(startDate = 'infinity', endDate = 'infinity', timezone = 'local'){
         const moment = require('moment-timezone');
         this.checkForDataFile();
+        this.setDates(startDate, endDate, timezone)
         let messageData = require('./data/data.json');
         let rankedDays = {};
         //Add senders to rankedDays object
@@ -196,10 +201,10 @@ let messageAnalyzer = {
         //Loop through all messages for each sender, access the timestamp property, and increment the appropriate day of the week
         for(let sender in messageData){
             for(let message of messageData[sender]){
-                if(message['dateMs'] >= startDate && message['dateMs'] <= endDate){
+                if(message['dateMs'] >= this.startTimestamp && message['dateMs'] <= this.endTimestamp){
                     //Determine day of the week that the message was sent (including timezone if necessary)
                     let day = undefined
-                    if(timezone === undefined){
+                    if(timezone === 'local'){
                         day = moment(message['dateMs']).isoWeekday();
                     } else {
                         day = moment.tz(message['dateMs'], timezone).isoWeekday();
@@ -240,7 +245,6 @@ let messageAnalyzer = {
         rankedDays['total'] = total
         return rankedDays
     },
-
 //*This should run all the functions and then display them in a really nice and easy to read multi line string. The functions themselves should return the data objects. This might show less than the data objects, for example only the top 10 most used words. 
 //*set defaults for variables?
     analyzeData: function(startDate = 0 - Infinity, endDate = Infinity, wordsToSkip = []){
@@ -256,7 +260,9 @@ let messageAnalyzer = {
 }
 
 
-console.log(messageAnalyzer.rankDays())
+console.log(messageAnalyzer.countMessages('01/17/2022 6:25:56', '01/17/2022 6:29:18', 'Asia/Ho_Chi_Minh'))
+
+// messageAnalyzer.setDates('infinity', 'infinity', undefined)
 
 
 //create "data" directory when parsing, that makes it easier if you want to analyzer a different convo, you can just delete everything in messages directory
