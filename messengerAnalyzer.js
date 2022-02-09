@@ -1,28 +1,8 @@
-
-//https://stackoverflow.com/questions/45973081/how-do-i-convert-the-timestamp-of-facebook-message-object
-//https://www.timeanddate.com/worldclock/converter.html?iso=20220205T070000&p1=142&p2=218
-//Here is a handy tool. Just enter the time in the other zone that you want to use, and then use the time displayed for your local time in this script
-//make a method using moment to convert the time which can also be used multiple times within other functions to convert the optional time zone parameter.
-
-//*check require are they const or let? make sure the same. For example message data could be const right?
-
-//times in messenger are stored in UTC and moment automatically converts it to local timezone
-//*the .utc() method keeps it as is
-//*If you want to analyze for any other time besides the local time include a timezone parameter which will be input into the moment function
-
-//start time Dec 04, 2013 11:00
-//end time Dec 05, 2017 10:59
-
-//start time Dec 04, 2013 11:00
-//end time Dec 05, 2021 10:59
-
-//is there a way to use the default parameters, and then enter the last one manually?
-
-//add date formatting and date formatting/timezone comment info
-//*add properties to beginning and add messageObject as a property too? Perhaps set to an if/else statement, if data exists = data, else = undefined
-
 //If no time zone is specified, calculations will be done in local time
 //If no date range is given the entire conversation history will be analyzed
+//Dates should be entered as strings in the following format 'M/D/YYYY H:mm:ss'
+//Timezones should be entered as strings such as 'America/Chicago' or 'Asia/Ho_Chi_Minh'
+//A full list of timezones is available at https://momentjs.com/timezone/
 let messageAnalyzer = {
     parseFiles: function(){
         let messagesData = {};
@@ -83,23 +63,23 @@ let messageAnalyzer = {
             this.startTimestamp = 0 - Infinity
             this.endTimestamp = Infinity
         } else if (startDate !== 'infinity' && endDate === 'infinity' && timezone === 'local'){
-            this.startTimestamp = moment(startDate, "M/D/YYYY H:mm:ss").valueOf()
+            this.startTimestamp = moment(startDate, 'M/D/YYYY H:mm:ss').valueOf()
             this.endTimestamp = Infinity
         } else if (startDate === 'infinity' && endDate !== 'infinity' && timezone === 'local'){
             this.startTimestamp = 0 - Infinity
-            this.endTimestamp = moment(endDate, "M/D/YYYY H:mm:ss").valueOf()
+            this.endTimestamp = moment(endDate, 'M/D/YYYY H:mm:ss').valueOf()
         } else if (startDate !== 'infinity' && endDate !== 'infinity' && timezone === 'local'){
-            this.startTimestamp = moment(startDate, "M/D/YYYY H:mm:ss").valueOf()
-            this.endTimestamp = moment(endDate, "M/D/YYYY H:mm:ss").valueOf()
+            this.startTimestamp = moment(startDate, 'M/D/YYYY H:mm:ss').valueOf()
+            this.endTimestamp = moment(endDate, 'M/D/YYYY H:mm:ss').valueOf()
         } else if (startDate !== 'infinity' && endDate === 'infinity' && timezone !== 'local'){
-            this.startTimestamp = moment.tz(startDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
+            this.startTimestamp = moment.tz(startDate, 'M/D/YYYY H:mm:ss', timezone).valueOf()
             this.endTimestamp = Infinity
         } else if (startDate === 'infinity' && endDate !== 'infinity' && timezone !== 'local'){
             this.startTimestamp = 0 - Infinity
-            this.endTimestamp = moment.tz(endDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
+            this.endTimestamp = moment.tz(endDate, 'M/D/YYYY H:mm:ss', timezone).valueOf()
         } else if (startDate !== 'infinity' && endDate !== 'infinity' && timezone !== 'local'){
-            this.startTimestamp = moment.tz(startDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
-            this.endTimestamp = moment.tz(endDate, "M/D/YYYY H:mm:ss", timezone).valueOf()
+            this.startTimestamp = moment.tz(startDate, 'M/D/YYYY H:mm:ss', timezone).valueOf()
+            this.endTimestamp = moment.tz(endDate, 'M/D/YYYY H:mm:ss', timezone).valueOf()
         }
     },
     //Count the messages sent by each sender as well as the total
@@ -262,10 +242,40 @@ let messageAnalyzer = {
 
 console.log(messageAnalyzer.countMessages('01/17/2022 6:25:56', '01/17/2022 6:29:18', 'Asia/Ho_Chi_Minh'))
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // messageAnalyzer.setDates('infinity', 'infinity', undefined)
 
 
-//create "data" directory when parsing, that makes it easier if you want to analyzer a different convo, you can just delete everything in messages directory
+//create 'data' directory when parsing, that makes it easier if you want to analyzer a different convo, you can just delete everything in messages directory
 //
 //add timezone support
 //add messengerAnalyzer.analyze(startDate, endDate, wordsToSkip)(returns the results) messengerAnalyzer.data() (returns the data) and use let data = this.data in .analyze().
@@ -284,8 +294,16 @@ console.log(messageAnalyzer.countMessages('01/17/2022 6:25:56', '01/17/2022 6:29
 //error message for invalid date
 //luckily parse does catch her =.= but only because it's symbols, not because it's emoji, any way to catch everything that even might include letters like o.o
 
-//useful discussion
+//*check require are they const or let? make sure the same. For example message data could be const right?
+//*is there a way to use the default parameters, and then enter the last one manually?
+//*add properties to beginning and add messageObject as a property too? Perhaps set to an if/else statement, if data exists = data, else = undefined
+
+
+//useful links
 //https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
 //https://stackoverflow.com/questions/20630676/how-to-group-objects-with-timestamps-properties-by-day-week-month/38896252
+//https://stackoverflow.com/questions/45973081/how-do-i-convert-the-timestamp-of-facebook-message-object
+//https://www.timeanddate.com/worldclock/converter.html?iso=20220205T070000&p1=142&p2=218
+
 
 
