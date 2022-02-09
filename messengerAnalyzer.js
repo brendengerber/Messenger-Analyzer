@@ -2,7 +2,7 @@
 //If no date range is given the entire conversation history will be analyzed
 //Dates should be entered as strings in the following format 'M/D/YYYY H:mm:ss'
 //Timezones should be entered as strings such as 'America/Chicago' or 'Asia/Ho_Chi_Minh'
-//A full list of timezones is available at https://momentjs.com/timezone/
+//A full list of timezones is available at https://momentjs.com/timezone/ or in the timezonesStrings.txt file
 let messageAnalyzer = {
     parseFiles: function(){
         let messagesData = {};
@@ -240,11 +240,12 @@ let messageAnalyzer = {
 }
 
 
-console.log(messageAnalyzer.rankDays('01/17/2022 6:25:56', '01/17/2022 6:29:18', 'Asia/Ho_Chi_Minh'))
+console.log(messageAnalyzer.rankDays('01/17/2022 6:25:56', '01/17/2022 6:29:18', 'UCT'))
 
 
 
-
+//dates
+//
 
 
 
@@ -307,3 +308,5 @@ console.log(messageAnalyzer.rankDays('01/17/2022 6:25:56', '01/17/2022 6:29:18',
 
 
 
+//things learned
+//git, git rebase, OOP, modular/scalable, npm libraries/moduals, helper functions, switches, date and timezone management, checking file system, writing files, reading JSON, writing JSON, parsing with regluar expressions, formatted strings
