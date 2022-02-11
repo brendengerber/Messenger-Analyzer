@@ -13,7 +13,7 @@ This simple script will allow you to conduct a simple analysis of your messenger
 
 3. In your newly downloaded zipfile, navigate to messages/inbox/ and open the desired conversation.
 
-4. Copy the .JSON files and paste them into messengerAnalyzer/messages/.
+4. Copy the JSON files and paste them into messengerAnalyzer/messages/. Make sure to delete the placeholder file.
 
 5. Run messengerAnalyzer.js in Node.js to log an easy to read breakdown of the analyzed data to the console. If you need to download Node.js visit [their](https://nodejs.org/en/) website.
 
