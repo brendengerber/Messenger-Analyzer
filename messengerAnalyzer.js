@@ -55,14 +55,14 @@ let messageAnalyzer = {
     //Convert date range to timestamp and converts to different timezone if necessary    
     setDates: function(date, timezone){
         let moment = require('moment-timezone')
-        let convertedDate = undefined
+        let convertedDate = undefined;
         if(date === 'start'){
             convertedDate = 0 - Infinity;
-        } else if (date === 'end'){
+        }else if(date === 'end'){
             convertedDate = Infinity;
-        } else if (date !== 'start' && date !== 'end' && timezone === 'local'){
+        }else if(date !== 'start' && date !== 'end' && timezone === 'local'){
             convertedDate = moment(date, 'M/D/YYYY H:mm:ss').valueOf();
-        } else if (date !== 'start' && date !== 'end' && timezone !== 'local'){
+        }else if(date !== 'start' && date !== 'end' && timezone !== 'local'){
             convertedDate = moment.tz(date, 'M/D/YYYY H:mm:ss', timezone).valueOf();
         } 
         return convertedDate
@@ -214,25 +214,58 @@ let messageAnalyzer = {
         rankedDays['total'] = total;
         return rankedDays
     },
-
-
-
-
-
-    analyzeData: function(startDate = 'start', endDate = 'end', timezone = 'local', wordsToSkip = []){
+    //Log an easy to read summary of the analyzed data
+    logAnalyzedData: function(startDate = 'start', endDate = 'end', timezone = 'local', wordsToSkip = []){
         let string = ''
-        let rankedWords = this.rankWords(startDate, endDate, wordsToSkip);
-        //* loop and add formatted string for each sender including \n.
-        let countedMessages = this.countMessages(startDate, endDate, wordsToSkip);
-        let rankedDays = this.rankDays();
-        let averagedWords = this.averageWords();
+        //Create a string for countMessages method
+        string = string.concat('**MESSAGES SENT**\n' + '-'.repeat(17) + '\n');
+        let countedMessages = this.countMessages(startDate, endDate, timezone);
+        for(let sender in countedMessages){
+            if(sender !== 'total'){
+                string = string.concat(`${sender} sent a total of ${countedMessages[sender]} messages.\n`);
+            }else{
+                string = string.concat(`The total number of messages sent was ${countedMessages['total']}.\n`);
+            }
+        }
+        //Create a string for averageWords method
+        string = string.concat('\n\n**AVERAGE MESSAGE LENGTH**\n' + '-'.repeat(26) + '\n');
+        let averageWords = this.averageWords(startDate, endDate, timezone);
+        for(sender in averageWords){
+            string = string.concat(`${sender}'s average message length was ${averageWords[sender]} words.\n`);
+        }
+        //Create a string for rankedWords method
+        string = string.concat('\n\n**MOST SENT WORDS**\n' + '-'.repeat(19) + '\n');
+        let rankedWords = this.rankWords(startDate, endDate, timezone, wordsToSkip);
+        for(let sender in rankedWords){
+            string = string.concat(`${sender}'s top ten most sent words: \n`);
+            for(let i=0; i < 10; i++ ){
+                string = string.concat(`     ${rankedWords[sender][i][0]}: ${rankedWords[sender][i][1]}\n`);
+            }
+            string = string.concat('\n');
+        }
+        //Create a string for rankDays method
+        string = string.concat('\n**MESSAGES SENT BY DAY**\n' + '-'.repeat(24) + '\n');
+        let rankedDays = this.rankDays(startDate, endDate, timezone);
+        for(let sender in rankedDays){
+            if(sender !== 'total'){
+                string = string.concat(`Words sent by ${sender}:\n`);
+                for(let day in rankedDays[sender]){
+                    string = string.concat(`     ${day}: ${rankedDays[sender][day]}\n`);
+                }
+                string = string.concat('\n');
+            }else{
+                string = string.concat(`Words sent in ${'total'}:\n`);
+                for(let day in rankedDays[sender]){
+                    string = string.concat(`     ${day}: ${rankedDays['total'][day]}\n`);
+                }
+            }
+        }
         console.log(string);
-// *Add all analysis functions here
     }
 }
 
-
-console.log(messageAnalyzer.rankDays())
+// console.log(messageAnalyzer.rankDays())
+messageAnalyzer.logAnalyzedData()
 
 
 
@@ -260,7 +293,7 @@ console.log(messageAnalyzer.rankDays())
 
 
 
-
+//rankDays, should provide average not total
 
 //final string parse, add issues, delete comments, fix to do with better description of how to use
 
