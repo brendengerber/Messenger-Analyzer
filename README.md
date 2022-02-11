@@ -18,7 +18,7 @@ This simple script will allow you to conduct a simple analysis of your messenger
 5. Finally, open messengerAnalyzer.js and and follow the instructions to run the script.
 
 ## **Credits**
-Thanks to [Thu Smiley](https://github.com/thusmiley/) for contributing your share of the data and for being a wonderful wife.
+Thanks [Thu Smiley](https://github.com/thusmiley/) for contributing your share of the data and for being a wonderful wife. And thanks for all the words my love!
 
 ## **License**
 GNU General Public License v3.0, see COPYING.txt for complete document.
