@@ -8,7 +8,7 @@
 //A full list of timezones is available at https://momentjs.com/timezone/ or in the timezonesStrings.txt file
 //Words to skip should be entered as an empty array of strings
 
-//If you would like to analyze a new conversation, remember to delete data.json in the data directory 
+//If you would like to analyze a new conversation, delete all old message JSON files as well as the data directory
 let messageAnalyzer = {
     parseFiles: function(){
         let messagesData = {};
@@ -45,18 +45,19 @@ let messageAnalyzer = {
             }
         }
         //Create a JSON file to avoid the lengthy parsing process if doing multiple analytics
-        require('fs').writeFileSync('./data/data.json', JSON.stringify(messagesData));
+        require('fs').mkdirSync('./messages/data');
+        require('fs').writeFileSync('./messages/data/data.json', JSON.stringify(messagesData));
     },
     //Check if data file exists and creates it if not
     checkForDataFile: function(){
-        if(!require('fs').existsSync('./data/data.json')){
+        if(!require('fs').existsSync('./messages/data/data.json')){
             this.parseFiles();
         }
     },
     //Log data file, useful for examining raw data
     logData: function(){
         this.checkForDataFile();
-        console.dir(require('./data/data.json'),{ depth: null });
+        console.dir(require('./messages/data/data.json'),{ depth: null });
     },
     //Convert date range to timestamp and converts to different timezone if necessary    
     setDates: function(date, timezone){
@@ -76,7 +77,7 @@ let messageAnalyzer = {
     //Count the messages sent by each sender as well as the total
     countMessages: function(startDate = 'start', endDate = 'end', timezone = 'local'){
         this.checkForDataFile();
-        const messageData = require('./data/data.json');
+        const messageData = require('./messages/data/data.json');
         let messageCounts = {};
         convertedStartDate = this.setDates(startDate, timezone);
         convertedEndDate = this.setDates(endDate, timezone);
@@ -103,7 +104,7 @@ let messageAnalyzer = {
     //Rank words of each sender based usage and order them in decending order
     rankWords: function(startDate = 'start', endDate = 'end', timezone = 'local', wordsToSkip = []){
         this.checkForDataFile();
-        const messageData = require('./data/data.json');
+        const messageData = require('./messages/data/data.json');
         let wordInstances = {};
         let sortedWordInstances = {};
         convertedStartDate = this.setDates(startDate, timezone);
@@ -137,7 +138,7 @@ let messageAnalyzer = {
     //Calculate the average number of words per message for each sender
     averageWords: function(startDate = 'start', endDate = 'end', timezone = 'local'){
         this.checkForDataFile();
-        const messageData = require('./data/data.json');
+        const messageData = require('./messages/data/data.json');
         let averageWordsPerMessage = {};
         convertedStartDate = this.setDates(startDate, timezone);
         convertedEndDate = this.setDates(endDate, timezone);        
@@ -167,7 +168,7 @@ let messageAnalyzer = {
         this.checkForDataFile();
         convertedStartDate = this.setDates(startDate, timezone);
         convertedEndDate = this.setDates(endDate, timezone);           
-        const messageData = require('./data/data.json');
+        const messageData = require('./messages/data/data.json');
         let rankedDays = {};
         //Add senders to rankedDays object
         for(let sender in messageData){
@@ -222,6 +223,7 @@ let messageAnalyzer = {
     },
     //Log an easy to read summary of the analyzed data
     logAnalyzedData: function(startDate, endDate, timezone, wordsToSkip){
+        this.checkForDataFile()
         let string = ''
         //Create a string for countMessages method
         string = string.concat('**MESSAGES SENT**\n' + '-'.repeat(17) + '\n');
