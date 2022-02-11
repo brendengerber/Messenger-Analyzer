@@ -1,8 +1,14 @@
-//If no time zone is specified, calculations will be done in local time
+//For a simple easy to read log of the analyzed data run messageAnalyzer.logAnalyzedData()
+//Optional parameters in order are start date, end date, timezone, and words to skip
+
 //If no date range is given the entire conversation history will be analyzed
+//If no time zone is specified, calculations will be done in local time
 //Dates should be entered as strings in the following format 'M/D/YYYY H:mm:ss'
 //Timezones should be entered as strings such as 'America/Chicago' or 'Asia/Ho_Chi_Minh'
 //A full list of timezones is available at https://momentjs.com/timezone/ or in the timezonesStrings.txt file
+//Words to skip should be entered as an empty array of strings
+
+//If you would like to analyze a new conversation, remember to delete data.json in the data directory 
 let messageAnalyzer = {
     parseFiles: function(){
         let messagesData = {};
@@ -10,7 +16,7 @@ let messageAnalyzer = {
         const emoticons = /O:-\)|O:\)|>:-\(|:42:|:-D|:D|:putnam:|O.o|:'\(|3:-\)|3:\)|=P|B\)|B-\)|8\)|8-\)|>:\(|=\)|<3|:-\/|:-\*|:\*|:3|\(Y\)|\(y\)|\^_\^|:v|<\("\)|:\|\]|=\(|:\[|:\(|:-\(|\(\^\^\^\)|:-o|:-O|:\]|:-\)|:\)|-_-|:-p|:-P|:p|:P|B\||B-\||8\||8-\||:-o|:-O|:o|:O|:\\|:-\\|:\/|>-:o|>:-O|=D|;-\)|:\)|>:o|>:O/g;
         //Create an array of all file names in the messages directory
         let messageDirectory = './messages';
-        let fileNames = require('fs').readdirSync(messageDirectory);
+        const fileNames = require('fs').readdirSync(messageDirectory);
         //Create an object containing all objects from the JSON files
         let filesObject = {};
         fileNames.forEach(file => {
@@ -54,7 +60,7 @@ let messageAnalyzer = {
     },
     //Convert date range to timestamp and converts to different timezone if necessary    
     setDates: function(date, timezone){
-        let moment = require('moment-timezone')
+        const moment = require('moment-timezone')
         let convertedDate = undefined;
         if(date === 'start'){
             convertedDate = 0 - Infinity;
@@ -70,7 +76,7 @@ let messageAnalyzer = {
     //Count the messages sent by each sender as well as the total
     countMessages: function(startDate = 'start', endDate = 'end', timezone = 'local'){
         this.checkForDataFile();
-        let messageData = require('./data/data.json');
+        const messageData = require('./data/data.json');
         let messageCounts = {};
         convertedStartDate = this.setDates(startDate, timezone);
         convertedEndDate = this.setDates(endDate, timezone);
@@ -97,7 +103,7 @@ let messageAnalyzer = {
     //Rank words of each sender based usage and order them in decending order
     rankWords: function(startDate = 'start', endDate = 'end', timezone = 'local', wordsToSkip = []){
         this.checkForDataFile();
-        let messageData = require('./data/data.json');
+        const messageData = require('./data/data.json');
         let wordInstances = {};
         let sortedWordInstances = {};
         convertedStartDate = this.setDates(startDate, timezone);
@@ -131,7 +137,7 @@ let messageAnalyzer = {
     //Calculate the average number of words per message for each sender
     averageWords: function(startDate = 'start', endDate = 'end', timezone = 'local'){
         this.checkForDataFile();
-        let messageData = require('./data/data.json');
+        const messageData = require('./data/data.json');
         let averageWordsPerMessage = {};
         convertedStartDate = this.setDates(startDate, timezone);
         convertedEndDate = this.setDates(endDate, timezone);        
@@ -161,7 +167,7 @@ let messageAnalyzer = {
         this.checkForDataFile();
         convertedStartDate = this.setDates(startDate, timezone);
         convertedEndDate = this.setDates(endDate, timezone);           
-        let messageData = require('./data/data.json');
+        const messageData = require('./data/data.json');
         let rankedDays = {};
         //Add senders to rankedDays object
         for(let sender in messageData){
@@ -215,23 +221,23 @@ let messageAnalyzer = {
         return rankedDays
     },
     //Log an easy to read summary of the analyzed data
-    logAnalyzedData: function(startDate = 'start', endDate = 'end', timezone = 'local', wordsToSkip = []){
+    logAnalyzedData: function(startDate, endDate, timezone, wordsToSkip){
         let string = ''
         //Create a string for countMessages method
         string = string.concat('**MESSAGES SENT**\n' + '-'.repeat(17) + '\n');
         let countedMessages = this.countMessages(startDate, endDate, timezone);
         for(let sender in countedMessages){
             if(sender !== 'total'){
-                string = string.concat(`${sender} sent a total of ${countedMessages[sender]} messages.\n`);
+                string = string.concat(`Total messages sent by ${sender}: ${countedMessages[sender]}\n`);
             }else{
-                string = string.concat(`The total number of messages sent was ${countedMessages['total']}.\n`);
+                string = string.concat(`Total messages sent: ${countedMessages['total']}\n`);
             }
         }
         //Create a string for averageWords method
         string = string.concat('\n\n**AVERAGE MESSAGE LENGTH**\n' + '-'.repeat(26) + '\n');
         let averageWords = this.averageWords(startDate, endDate, timezone);
         for(sender in averageWords){
-            string = string.concat(`${sender}'s average message length was ${averageWords[sender]} words.\n`);
+            string = string.concat(`${sender}'s average message length: ${averageWords[sender]}\n`);
         }
         //Create a string for rankedWords method
         string = string.concat('\n\n**MOST SENT WORDS**\n' + '-'.repeat(19) + '\n');
@@ -264,78 +270,4 @@ let messageAnalyzer = {
     }
 }
 
-// console.log(messageAnalyzer.rankDays())
 messageAnalyzer.logAnalyzedData()
-
-
-
-//dates
-//start december 4, 2013 00:00 1386090000000
-//end december 5, 2017 00:00 1512406800000
-
-//december 6, 2017 00:00
-//end december 7 2021 00:00
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//rankDays, should provide average not total
-
-//final string parse, add issues, delete comments, fix to do with better description of how to use
-
-
-
-
-//how can i do it another way without setting date parameters?
-
-// messageAnalyzer.setDates('infinity', 'infinity', undefined)
-
-
-//create 'data' directory when parsing, that makes it easier if you want to analyzer a different convo, you can just delete everything in messages directory
-//
-//add timezone support
-//add messengerAnalyzer.analyze(startDate, endDate, wordsToSkip)(returns the results) messengerAnalyzer.data() (returns the data) and use let data = this.data in .analyze().
-//Use getters and setters, especially for dates since you will need to convert to ms
-//determine dataset date range and display a message if the range input is outside that range?
-//writeFile vs writeFileSync
-//This function can save those objects to variables maybe. It would also be nice to create later a csv function that would write the data objects returned by each function.
-//is there a way to create a new data file if things have changed?
-//descrpitions for parameters
-
-// // add a method to check the count for a specific word checkCount(word)
-
-// //create a different method for each analysis and have analysis method call each one. Each method should return the data and to view it log the analysis method
-
-// //add An error has occured message to each function at the end of if else, as a catch all? or maybe it is just needed on the analyze file. Otherwise the data file either exists or it doesn't
-//error message for invalid date
-//luckily parse does catch her =.= but only because it's symbols, not because it's emoji, any way to catch everything that even might include letters like o.o
-
-//*check require are they const or let? make sure the same. For example message data could be const right?
-//*is there a way to use the default parameters, and then enter the last one manually?
-//*add properties to beginning and add messageObject as a property too? Perhaps set to an if/else statement, if data exists = data, else = undefined
-
-
-//useful links
-//https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
-//https://stackoverflow.com/questions/20630676/how-to-group-objects-with-timestamps-properties-by-day-week-month/38896252
-//https://stackoverflow.com/questions/45973081/how-do-i-convert-the-timestamp-of-facebook-message-object
-//https://www.timeanddate.com/worldclock/converter.html?iso=20220205T070000&p1=142&p2=218
-
-
-
-//things learned
-//git, git rebase, OOP, modular/scalable, npm libraries/moduals, helper functions, switches, date and timezone management, checking file system, writing files, reading JSON, writing JSON, parsing with regluar expressions, formatted strings
