@@ -1,12 +1,14 @@
-//For a simple easy to read log of the analyzed data run messageAnalyzer.logAnalyzedData()
-//Optional parameters in order are start date, end date, timezone, and words to skip
+//For a simple easy to read log of analyzed data, run messageAnalyzer.logAnalyzedData()
+//To create a JSON file with analyzed data, run messageAnalyzer.createJSON()
 
+//Optional parameters in order are start date, end date, timezone, and words to skip
+//'start' = start of conversation, 'end' = 'end of conversation', 'local' = local timezone
 //If no date range is given the entire conversation history will be analyzed
 //If no time zone is specified, calculations will be done in local time
 //Dates should be entered as strings in the following format 'M/D/YYYY H:mm:ss'
 //Timezones should be entered as strings such as 'America/Chicago' or 'Asia/Ho_Chi_Minh'
 //A full list of timezones is available at https://momentjs.com/timezone/ or in the timezonesStrings.txt file
-//Words to skip should be entered as an empty array of strings
+//Words to skip should be entered as an array of strings
 
 //If you would like to analyze a new conversation, delete all old message JSON files as well as the data directory
 let messageAnalyzer = {
@@ -36,7 +38,7 @@ let messageAnalyzer = {
                     message['content'] = message['content'].replace(/(?:https?|ftp):\/\/[\S]+/g, ' ').replace(/^Reacted.*to your message $/, ' ').replace(emoticons, ' ').replace(/(?!')\W+/g, ' ').toLowerCase().trim();
                 }
                 //Check if message is undefined, empty, or of the wrong type (i.e. share) and continues if so  
-                if( message['content'] === '' || message['content'] === undefined || message['type'] !== 'Generic') {
+                if( message['content'] === '' || message['content'] === undefined || message['type'] !== 'Generic'){
                     continue
                 //Add message to messagesData as an array of seperate words
                 }else{
@@ -61,7 +63,7 @@ let messageAnalyzer = {
     },
     //Convert date range to timestamp and converts to different timezone if necessary    
     setDates: function(date, timezone){
-        const moment = require('moment-timezone')
+        const moment = require('moment-timezone');
         let convertedDate = undefined;
         if(date === 'start'){
             convertedDate = 0 - Infinity;
@@ -179,7 +181,7 @@ let messageAnalyzer = {
             for(let message of messageData[sender]){
                 if(message['dateMs'] >= convertedStartDate && message['dateMs'] <= convertedEndDate){
                     //Determine day of the week that the message was sent (including timezone if necessary)
-                    let day = undefined
+                    let day = undefined;
                     if(timezone === 'local'){
                         day = moment(message['dateMs']).isoWeekday();
                     } else {
@@ -223,8 +225,8 @@ let messageAnalyzer = {
     },
     //Log an easy to read summary of the analyzed data
     logAnalyzedData: function(startDate, endDate, timezone, wordsToSkip){
-        this.checkForDataFile()
-        let string = ''
+        this.checkForDataFile();
+        let string = '';
         //Create a string for countMessages method
         string = string.concat('**MESSAGES SENT**\n' + '-'.repeat(17) + '\n');
         let countedMessages = this.countMessages(startDate, endDate, timezone);
@@ -269,7 +271,29 @@ let messageAnalyzer = {
             }
         }
         console.log(string);
-    }
+    },
+    createJSON: function(startDate = 'start', endDate = 'end', timezone = 'local', wordsToSkip = []){
+        this.checkForDataFile();         
+        const messageData = require('./messages/data/data.json');
+        let countedMessages = this.countMessages(startDate, endDate, timezone);
+        let rankedWords = this.rankWords(startDate, endDate, timezone, wordsToSkip);
+        let averagedWords = this.averageWords(startDate, endDate, timezone);
+        let rankedDays = this.rankDays(startDate, endDate, timezone);
+        let analyzedData = {};
+        for(let sender in messageData){
+            analyzedData[sender] = {};
+        }
+        analyzedData['total']={};
+        for(let sender in analyzedData){
+            analyzedData[sender]['countedMessages'] = countedMessages[sender];
+            analyzedData[sender]['rankedWords'] = rankedWords[sender];
+            analyzedData[sender]['averagedWords'] = averagedWords[sender];
+            analyzedData[sender]['rankedDays'] = rankedDays[sender];
+        }
+        analyzedData['info'] = {'startDate': startDate, 'endDate': endDate, 'timezone': timezone, 'wordsSkipped': wordsToSkip}
+        require('fs').writeFileSync('./messages/data/dataAnalyzed', JSON.stringify(analyzedData));
+        return analyzedData
+    } 
 }
 
-messageAnalyzer.logAnalyzedData()
+messageAnalyzer.createJSON('start', 'end', 'local', ['test', 'test2'])
