@@ -296,4 +296,4 @@ let messageAnalyzer = {
     } 
 }
 
-messageAnalyzer.createJSON('start', 'end', 'local', ['test', 'test2'])
+messageAnalyzer.logAnalyzedData()
