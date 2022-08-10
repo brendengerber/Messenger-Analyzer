@@ -1,8 +1,12 @@
 # **Facebook Messenger Analyzer**
 ## **Desctiption**
 This simple script will allow you to conduct a simple analysis of your messenger history with a specific person. I was originally inspired to create this as a Valentine's Day gift for my wife who is currently learning how to code. I used the data to create a visual representation of the data from 3 years before and after our wedding to illustrate how our relationship has changed. Glossy photo paper and a simple frame and voilà, a great Valentine's Day gift!
-## **Usage**
 
+## **Technologies**
+1. JavaScript
+2. Node.js v16.16.0
+
+## **Usage**
 1. Download the JSON file containing your messenger data.
     * Proceed to Facebook's download [page](https://www.facebook.com/dyi)
     * Change "format" to "JSON"
