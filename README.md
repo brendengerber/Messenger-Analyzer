@@ -19,11 +19,13 @@ This simple script will allow you to conduct a simple analysis of your messenger
 
 4. Copy the JSON files and paste them into messengerAnalyzer/messages/. Make sure to delete the placeholder file.
 
-5. Run messengerAnalyzer.js in Node.js to log an easy to read breakdown of the analyzed data to the console. If you need to download Node.js visit [their](https://nodejs.org/en/) website.
+5. If you do not have Node.js and NPM installed, you can download them from thier official [website](https://nodejs.org/en/).
 
-6. For more detailed information such as optional parameters, see comments in messengerAnalyzer.js.
+6. To log an easy to read breakdown of the analyzed data to the console, navagate to the project's directory in the cmd prompt and run the script using the command "node messengerAnalyzer.js". 
 
-7. If you would like to analyze a new conversation, don't forget to delete data.json in the data directory as well as the old message JSON files.
+7. For more detailed information such as optional parameters, see comments in messengerAnalyzer.js.
+
+8. If you would like to analyze a new conversation, don't forget to delete data.json in the data directory as well as the old message JSON files.
 
 ## **Credits**
 Thanks [Thu Smiley](https://github.com/thusmiley/) for contributing your share of the data and for being a wonderful wife. And thanks for all the words my love!
